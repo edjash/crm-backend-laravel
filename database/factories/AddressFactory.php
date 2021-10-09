@@ -1,0 +1,47 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Address;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\DB;
+
+class AddressFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Address::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        $countryCode = $this->faker->countryCode();
+        $countryName = "";
+        while ($countryName == null) {
+            $countryCode = $this->faker->countryCode();
+            $countryName = DB::table('countries')->where('code', $countryCode)->value('name');
+        }
+
+        $address = [
+            'line1' => $this->faker->streetAddress(),
+            'line2' => '',
+            'town' => $this->faker->city(),
+            'county' => '',
+            'postcode' => $this->faker->postcode(),
+            'country_name' => $countryName
+        ];
+
+        $address['full_address'] = implode(", ", array_filter($address));
+        $address['country_code'] = $countryCode;
+        $address['type'] = 'main';
+
+        return $address;
+    }
+}
