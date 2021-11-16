@@ -69,9 +69,9 @@ class ContactController extends Controller
      */
     public function delete($ids)
     {
-        $ids = explode(",", $ids);
+        $ids = array_map('intval', explode(",", $ids));
         $deleted = Contact::destroy($ids);
 
-        return response()->json(["deleted" => $deleted]);
+        return response()->json(["deleted" => $ids]);
     }
 }
