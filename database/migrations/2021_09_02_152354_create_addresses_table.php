@@ -16,7 +16,13 @@ class CreateAddressesTable extends Migration
         Schema::create('addresses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('contact_id')
+                ->nullable()
                 ->constrained()
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+            $table->foreignId('company_id')
+                ->nullable()
+                ->constrained('companies')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->string('type', 10);
