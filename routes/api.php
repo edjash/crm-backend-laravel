@@ -23,4 +23,5 @@ Route::get('/contacts', [ContactController::class, 'index'])->middleware('auth:s
 Route::post('/contacts', [ContactController::class, 'store'])->middleware('auth:sanctum');
 Route::delete('/contacts/{ids}', [ContactController::class, 'delete'])->middleware('auth:sanctum');
 Route::get('/companies', [CompanyController::class, 'index'])->middleware('auth:sanctum');
+Route::post('/companies', [CompanyController::class, 'store'])->middleware('auth:sanctum');
 Route::delete('/companies/{ids}', [CompanyController::class, 'delete'])->middleware('auth:sanctum');

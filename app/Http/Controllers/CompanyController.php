@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class CompanyController extends Controller
@@ -42,7 +43,32 @@ class CompanyController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'street' => 'string|max:255',
+            'town' => 'string|max:255',
+            'county' => 'string|max:255',
+            'postcode' => 'string|max:255',
+            'country_code' => 'string|max:255',
+        ]);
+
+        $company = Company::create([
+            'name' => $validatedData['name'],
+        ]);
+
+        $address = [
+            "type" => "main",
+            "company_id" => $company->id,
+            "street" => $validatedData['street'] ?? "",
+            "town" => $validatedData['town'] ?? "",
+            "county" => $validatedData['county'] ?? "",
+            "postcode" => $validatedData['postcode'] ?? "",
+            "country_code" => $validatedData['country_code'] ?? ""
+        ];
+
+        DB::table('addresses')->insert($address);
+
+        return response()->json(["company" => $company]);
     }
 
     /**

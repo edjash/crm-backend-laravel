@@ -11,6 +11,10 @@ class Company extends Model
 
     protected $table = 'companies';
 
+    protected $fillable = [
+        'name',
+    ];
+
     public function address()
     {
         return $this->hasMany(Address::class);
