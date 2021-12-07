@@ -34,7 +34,6 @@ class AddressFactory extends Factory
             'town' => $this->faker->city(),
             'county' => '',
             'postcode' => $this->faker->postcode(),
-            'country_name' => $countryName
         ];
 
         $address['country_code'] = $countryCode;
