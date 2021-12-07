@@ -28,8 +28,6 @@ class ContactFactory extends Factory
         return [
             'firstname' => $firstName,
             'lastname' => $lastName,
-            'fullname' => $firstName.' '.$lastName,
-            'dob' => $this->faker->dateTimeThisCentury->format('Y-m-d')
         ];
     }
 }

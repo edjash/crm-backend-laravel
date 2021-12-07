@@ -26,14 +26,12 @@ class CreateAddressesTable extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->string('type', 10);
-            $table->string('line1', 255);
-            $table->string('line2', 255);
+            $table->string('street', 255);
             $table->string('town', 255);
             $table->string('county', 255);
             $table->string('country_code', 255);
             $table->string('country_name', 255);
             $table->string('postcode', 255);
-            $table->text('full_address');
             $table->timestamps();
         });
     }

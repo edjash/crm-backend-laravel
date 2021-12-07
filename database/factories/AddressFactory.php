@@ -30,15 +30,13 @@ class AddressFactory extends Factory
         }
 
         $address = [
-            'line1' => $this->faker->streetAddress(),
-            'line2' => '',
+            'street' => $this->faker->streetAddress(),
             'town' => $this->faker->city(),
             'county' => '',
             'postcode' => $this->faker->postcode(),
             'country_name' => $countryName
         ];
 
-        $address['full_address'] = implode(", ", array_filter($address));
         $address['country_code'] = $countryCode;
         $address['type'] = 'main';
 
