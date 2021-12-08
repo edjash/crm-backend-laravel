@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Address;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -58,11 +59,11 @@ class ContactController extends Controller
         ]);
 
         $contact = Contact::create([
-            'firstname' => $validatedData['firstname'],
+            'firstname' => $validatedData['firstname'] ?? "",
             'lastname' => $validatedData['lastname'] ?? "",
         ]);
 
-        $address = [
+        $addr = [
             "type" => "main",
             "contact_id" => $contact->id,
             "street" => $validatedData['street'] ?? "",
@@ -72,7 +73,9 @@ class ContactController extends Controller
             "country_code" => $validatedData['country_code'] ?? ""
         ];
 
-        DB::table('addresses')->insert($address);
+        $address = new Address();
+        $address->fill($addr);
+        $address->save();
 
         return response()->json(["contact" => $contact]);
     }

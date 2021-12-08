@@ -12,11 +12,21 @@ class Contact extends Model
     protected $fillable = [
         'firstname',
         'lastname',
+        'fullname',
     ];
 
 
     public function address()
     {
         return $this->hasMany(Address::class);
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        Contact::saving(function ($model) {
+            $fullname = trim($model->firstname . ' ' . $model->lastname);
+            $model->fullname = $fullname;
+        });
     }
 }

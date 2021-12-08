@@ -31,6 +31,8 @@ class CreateAddressesTable extends Migration
             $table->string('county', 255);
             $table->string('country_code', 255);
             $table->string('postcode', 255);
+            $table->string('country_name', 255);
+            $table->text('full_address');
             $table->timestamps();
         });
     }
