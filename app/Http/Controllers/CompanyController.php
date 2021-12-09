@@ -28,7 +28,13 @@ class CompanyController extends Controller
         } else {
             $builder = Company::with(['address' => function ($query) {
                 $query->where('type', '=', 'main')->whereNull('contact_id');
-            }])->where('companies.name', 'LIKE', "%{$term}%");
+            }])->where('companies.name', 'LIKE', "%{$term}%")
+                ->orWhereHas('address', function ($query) use ($term) {
+                    $query->where([
+                        ['type', '=', 'main'],
+                        ['full_address', 'LIKE', "%{$term}%"]
+                    ])->whereNull('contact_id');
+                });
 
             return $builder->paginate($request->limit);
         }
