@@ -96,11 +96,11 @@ class CompanyController extends Controller
      * @param  \App\Models\Company  $Company
      * @return \Illuminate\Http\Response
      */
-    public function delete($ids)
+    public function delete(Request $request, $ids)
     {
         $ids = array_map('intval', explode(",", $ids));
-        $deleted = Company::destroy($ids);
+        Company::destroy($ids);
 
-        return response()->json(["deleted" => $ids]);
+        return $this->getCompanies($request);
     }
 }
