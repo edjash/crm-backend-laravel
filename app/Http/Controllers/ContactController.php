@@ -100,11 +100,11 @@ class ContactController extends Controller
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    public function delete($ids)
+    public function delete(Request $request, $ids)
     {
         $ids = array_map('intval', explode(",", $ids));
-        $deleted = Contact::destroy($ids);
+        Contact::destroy($ids);
 
-        return response()->json(["deleted" => $ids]);
+        return $this->getContacts($request);
     }
 }
