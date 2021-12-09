@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use App\Models\Address;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
@@ -24,18 +23,21 @@ class ContactController extends Controller
         $term = $request->input('search');
         if (!$term) {
             return Contact::with(['address' => function ($query) {
-                $query->where('type', '=', 'main');
+                $query->where('type', '=', 'main')
+                    ->whereNull('company_id');
             }])->paginate($request->limit);
         } else {
             $builder = Contact::with(['address' => function ($query) {
-                $query->where('type', '=', 'main');
+                $query->where('type', '=', 'main')
+                    ->whereNull('company_id');
             }])->where('contacts.fullname', 'LIKE', "%{$term}%")
                 ->orWhereHas('address', function ($query) use ($term) {
-                    $query->where('full_address', 'LIKE', "%{$term}%");
+                    $query->where([
+                        ['type', '=', 'main'],
+                        ['full_address', 'LIKE', "%{$term}%"]
+                    ])->whereNull('company_id');
                 });
 
-
-            // return ["sql" => $builder->toSql(), "bindings" => $builder->getBindings(), "data" => []];
             return $builder->paginate($request->limit);
         }
     }

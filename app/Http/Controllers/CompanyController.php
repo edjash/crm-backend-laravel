@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use Illuminate\Support\Facades\DB;
+use App\Models\Address;
 use Illuminate\Http\Request;
 
 class CompanyController extends Controller
@@ -23,14 +23,13 @@ class CompanyController extends Controller
         $term = $request->input('search');
         if (!$term) {
             return Company::with(['address' => function ($query) {
-                $query->where('type', '=', 'main');
+                $query->where('type', '=', 'main')->whereNull('contact_id');
             }])->paginate($request->limit);
         } else {
             $builder = Company::with(['address' => function ($query) {
-                $query->where('type', '=', 'main');
-            }])->where('Companies.name', 'LIKE', "%{$term}%");
+                $query->where('type', '=', 'main')->whereNull('contact_id');
+            }])->where('companies.name', 'LIKE', "%{$term}%");
 
-            // return ["sql" => $builder->toSql(), "bindings" => $builder->getBindings(), "data" => []];
             return $builder->paginate($request->limit);
         }
     }
@@ -56,7 +55,7 @@ class CompanyController extends Controller
             'name' => $validatedData['name'],
         ]);
 
-        $address = [
+        $addr = [
             "type" => "main",
             "company_id" => $company->id,
             "street" => $validatedData['street'] ?? "",
@@ -66,7 +65,9 @@ class CompanyController extends Controller
             "country_code" => $validatedData['country_code'] ?? ""
         ];
 
-        DB::table('addresses')->insert($address);
+        $address = new Address();
+        $address->fill($addr);
+        $address->save();
 
         return response()->json(["company" => $company]);
     }
