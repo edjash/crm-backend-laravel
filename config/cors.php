@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://edcrm-dev.local:3000', 'http://edcrm-staging.local', 'https://edcrm.live'],
+    'allowed_origins' => ['*://edcrm-dev.local:*', '*://192.168.*:*'],
 
     'allowed_origins_patterns' => [],
 
