@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="robots" content="noindex,nofollow">
     <link rel="icon" type="image/svg+xml" href="/js/frontend/{{ $favicon }}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CRM Demo</title>
