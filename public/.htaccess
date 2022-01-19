@@ -8,7 +8,7 @@
     # Added to Force HTTPS
     RewriteCond %{HTTP_HOST} crmdemo\.co\.uk [NC]
     RewriteCond %{SERVER_PORT} 80
-    RewriteRule ^(.*)$ https://crmdemo\.co.\.uk/$1 [R,L]
+    RewriteRule ^(.*)$ https://crmdemo\.co\.uk/$1 [R,L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
