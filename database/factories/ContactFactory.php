@@ -22,10 +22,15 @@ class ContactFactory extends Factory
      */
     public function definition()
     {
-        $firstName = $this->faker->firstName();
+        $genders = ['male', 'female'];
+        $gender = $genders[rand(0, 1)];
+
+        $title = str_replace('.', '', $this->faker->title($gender));
+        $firstName = $this->faker->firstName($gender);
         $lastName = $this->faker->lastName();
 
         return [
+            'title' => $title,
             'firstname' => $firstName,
             'lastname' => $lastName,
         ];

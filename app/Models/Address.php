@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Country;
+use phpDocumentor\Reflection\Types\Boolean;
 
 class Address extends Model
 {
@@ -13,15 +14,17 @@ class Address extends Model
     protected $table = 'addresses';
 
     protected $fillable = [
-        'type',
         'contact_id',
         'company_id',
         'street',
         'town',
         'county',
         'postcode',
-        'country_code',
+        'country',
         'country_name',
+        'full_address',
+        'label',
+        'display_index',
     ];
 
     public function contact()
@@ -34,6 +37,21 @@ class Address extends Model
         return $this->belongsTo(Company::class);
     }
 
+    public function country()
+    {
+        return $this->hasOne(Country::class, 'code', 'country');
+    }
+
+    public static function isEmpty($address): bool
+    {
+        $required = ['street', 'town', 'county', 'postcode', 'country'];
+        $values = [];
+        foreach ($required as $item) {
+            $values[] = $address[$item] ?? '';
+        }
+        return (count(array_filter($values)) === 0);
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -44,19 +62,24 @@ class Address extends Model
                 "town" => $model->town,
                 "county" => $model->county,
                 "postcode" => $model->postcode,
+                "country_name" => "",
             ];
 
-            if ($model->country_code) {
-                $country = Country::where('code', $model->country_code)->first();
+            if ($model->country) {
+                $country = Country::where('code', $model->country)->first();
                 if ($country) {
-                    $model->country_name = $country->name;
                     $address['country_name'] = $country->name;
+                    $model->country_name = $country->name;
                 }
             }
 
-            $address = array_filter($address);
-            if (count($address)) {
-                $model->full_address = implode(", ", $address);
+            $fulladdress = array_filter($address);
+            if (count($fulladdress)) {
+                $model->full_address = implode(", ", $fulladdress);
+            }
+
+            if (!$model->display_index) {
+                $model->display_index = 0;
             }
         });
     }

@@ -5,14 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Contact;
 use App\Models\Address;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ContactController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
         return response()->json($this->getContacts($request));
@@ -23,17 +19,14 @@ class ContactController extends Controller
         $term = $request->input('search');
         if (!$term) {
             return Contact::with(['address' => function ($query) {
-                $query->where('type', '=', 'main')
-                    ->whereNull('company_id');
+                $query->whereNull('company_id');
             }])->paginate($request->limit);
         } else {
             $builder = Contact::with(['address' => function ($query) {
-                $query->where('type', '=', 'main')
-                    ->whereNull('company_id');
+                $query->whereNull('company_id');
             }])->where('contacts.fullname', 'LIKE', "%{$term}%")
                 ->orWhereHas('address', function ($query) use ($term) {
                     $query->where([
-                        ['type', '=', 'main'],
                         ['full_address', 'LIKE', "%{$term}%"]
                     ])->whereNull('company_id');
                 });
@@ -42,69 +35,125 @@ class ContactController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function getContact(Request $request, $id)
     {
-        $validatedData = $request->validate([
-            'firstname' => 'required|string|max:255',
-            'lastname' => 'string|max:255',
-            'street' => 'string|max:255',
-            'town' => 'string|max:255',
-            'county' => 'string|max:255',
-            'postcode' => 'string|max:255',
-            'country_code' => 'string|max:255',
-        ]);
+        $contact = Contact::with(['address', 'emailAddress'])->find($id);
+
+        return response()->json($contact);
+    }
+
+    public function create(Request $request)
+    {
+        $validatedData = $this->validateData($request);
 
         $contact = Contact::create([
+            'title' => $validatedData['title'] ?? '',
             'firstname' => $validatedData['firstname'] ?? "",
             'lastname' => $validatedData['lastname'] ?? "",
         ]);
 
-        $addr = [
-            "type" => "main",
-            "contact_id" => $contact->id,
-            "street" => $validatedData['street'] ?? "",
-            "town" => $validatedData['town'] ?? "",
-            "county" => $validatedData['county'] ?? "",
-            "postcode" => $validatedData['postcode'] ?? "",
-            "country_code" => $validatedData['country_code'] ?? ""
-        ];
-
-        $address = new Address();
-        $address->fill($addr);
-        $address->save();
+        $this->insertUpdateItems('Address', $validatedData['address'] ?? [], $contact->id);
+        $this->insertUpdateItems('EmailAddress', $validatedData['email'] ?? [], $contact->id);
 
         return response()->json(["contact" => $contact]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Contact  $contact
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Contact $contact)
+    public function update(Request $request, int $id)
     {
-        //
+        $validatedData = $this->validateData($request);
+        $contact = Contact::find($id);
+        $contact->fill($validatedData);
+        $contact->save();
+
+        $this->deleteItems('Address', $validatedData['address_deleted'] ?? '');
+        $this->deleteItems('EmailAddress', $validatedData['email_deleted'] ?? '');
+
+        $this->insertUpdateItems('Address', $validatedData['address'] ?? [], $contact->id);
+        $this->insertUpdateItems('EmailAddress', $validatedData['email'] ?? [], $contact->id);
+
+        return response()->json(["contact" => $contact]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Contact  $contact
-     * @return \Illuminate\Http\Response
-     */
     public function delete(Request $request, $ids)
     {
         $ids = array_map('intval', explode(",", $ids));
         Contact::destroy($ids);
 
         return $this->getContacts($request);
+    }
+
+    //Utility functions
+    private function validateData(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'title' => 'max:255',
+            'firstname' => 'required|max:255',
+            'lastname' => 'max:255',
+            'address.*.id' => 'numeric',
+            'address.*.label' => 'max:255',
+            'address.*.street' => 'max:255',
+            'address.*.town' => 'max:255',
+            'address.*.county' => 'max:255',
+            'address.*.postcode' => 'max:255',
+            'address.*.country' => 'max:3',
+            'address_deleted' => 'string|nullable',
+            'email.*.id' => 'numeric',
+            'email.*.label' => 'max:255',
+            'email.*.address' => 'max:255',
+            'email_deleted' => 'string|nullable'
+        ])->validate();
+    }
+
+    private function deleteItems($modelName, $list)
+    {
+        $model = "App\\Models\\$modelName";
+
+        if (!$list) {
+            return;
+        }
+        $list = explode(",", $list);
+        foreach ($list as $id) {
+            $id = trim($id);
+            if ($id) {
+                $model::destroy($id);
+            }
+        }
+    }
+
+    private function insertUpdateItems($modelName, $list, $contact_id)
+    {
+        $model = "App\\Models\\$modelName";
+
+        if (!count($list)) {
+            return;
+        }
+
+        foreach ($list as $index => $data) {
+
+            $data["contact_id"] = $contact_id;
+            $data["display_index"] = $index;
+
+            if (!($data['id'] ?? false)) {
+                if (!$model::isEmpty($data)) {
+                    $model::create($data);
+                }
+                continue;
+            }
+
+            $instance = $model::find($data['id']);
+
+            if (!$instance || $instance->contact_id != $contact_id) {
+                continue;
+            }
+
+            if ($model::isEmpty($data)) {
+                $model::destroy($data['id']);
+                continue;
+            }
+
+            $instance->fill($data);
+            $instance->save();
+            continue;
+        }
     }
 }
