@@ -23,15 +23,14 @@ class CompanyController extends Controller
         $term = $request->input('search');
         if (!$term) {
             return Company::with(['address' => function ($query) {
-                $query->where('type', '=', 'main')->whereNull('contact_id');
+                $query->whereNull('contact_id');
             }])->paginate($request->limit);
         } else {
             $builder = Company::with(['address' => function ($query) {
-                $query->where('type', '=', 'main')->whereNull('contact_id');
+                $query->whereNull('contact_id');
             }])->where('companies.name', 'LIKE', "%{$term}%")
                 ->orWhereHas('address', function ($query) use ($term) {
                     $query->where([
-                        ['type', '=', 'main'],
                         ['full_address', 'LIKE', "%{$term}%"]
                     ])->whereNull('contact_id');
                 });
