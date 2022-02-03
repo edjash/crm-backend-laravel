@@ -17,6 +17,7 @@ class ContactsSeeder extends Seeder
             ->count(20)
             ->hasAddress(1)
             ->hasEmailAddress(1)
+            ->hasPhoneNumber(1)
             ->create();
     }
 }

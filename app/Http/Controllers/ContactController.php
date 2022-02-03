@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use App\Models\Address;
+use App\Models\SocialMediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -37,7 +38,14 @@ class ContactController extends Controller
 
     public function getContact(Request $request, $id)
     {
-        $contact = Contact::with(['address', 'emailAddress'])->find($id);
+        $contact = Contact::with(
+            [
+                'address',
+                'emailAddress',
+                'phoneNumber',
+                'socialMediaUrl',
+            ]
+        )->find($id);
 
         return response()->json($contact);
     }
@@ -48,12 +56,14 @@ class ContactController extends Controller
 
         $contact = Contact::create([
             'title' => $validatedData['title'] ?? '',
+            'pronouns' => $validatedData['pronouns'] ?? '',
             'firstname' => $validatedData['firstname'] ?? "",
             'lastname' => $validatedData['lastname'] ?? "",
         ]);
 
         $this->insertUpdateItems('Address', $validatedData['address'] ?? [], $contact->id);
         $this->insertUpdateItems('EmailAddress', $validatedData['email'] ?? [], $contact->id);
+        $this->insertUpdateItems('PhoneNumber', $validatedData['phone'] ?? [], $contact->id);
 
         return response()->json(["contact" => $contact]);
     }
@@ -67,9 +77,20 @@ class ContactController extends Controller
 
         $this->deleteItems('Address', $validatedData['address_deleted'] ?? '');
         $this->deleteItems('EmailAddress', $validatedData['email_deleted'] ?? '');
-
+        $this->deleteItems('PhoneNumber', $validatedData['phone_deleted'] ?? '');
         $this->insertUpdateItems('Address', $validatedData['address'] ?? [], $contact->id);
         $this->insertUpdateItems('EmailAddress', $validatedData['email'] ?? [], $contact->id);
+        $this->insertUpdateItems('PhoneNumber', $validatedData['phone'] ?? [], $contact->id);
+
+        foreach ($validatedData['socialmedia'] as $ident => $url) {
+            if (!in_array($ident, ['facebook', 'instagram', 'twitter', 'linkedin'])) {
+                continue;
+            }
+            SocialMediaUrl::updateOrCreate(
+                ["contact_id" => $contact->id, "ident" => $ident],
+                ["ident" => $ident, "url" => $url]
+            );
+        }
 
         return response()->json(["contact" => $contact]);
     }
@@ -87,6 +108,7 @@ class ContactController extends Controller
     {
         return Validator::make($request->all(), [
             'title' => 'max:255',
+            'pronouns' => 'max:255',
             'firstname' => 'required|max:255',
             'lastname' => 'max:255',
             'address.*.id' => 'numeric',
@@ -100,7 +122,12 @@ class ContactController extends Controller
             'email.*.id' => 'numeric',
             'email.*.label' => 'max:255',
             'email.*.address' => 'max:255',
-            'email_deleted' => 'string|nullable'
+            'email_deleted' => 'string|nullable',
+            'phone.*.id' => 'numeric',
+            'phone.*.label' => 'max:255',
+            'phone.*.number' => 'max:255',
+            'phone_deleted' => 'string|nullable',
+            'socialmedia.*' => 'max:255',
         ])->validate();
     }
 

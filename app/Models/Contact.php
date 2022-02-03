@@ -11,6 +11,7 @@ class Contact extends Model
 
     protected $fillable = [
         'title',
+        'pronouns',
         'firstname',
         'lastname',
         'fullname',
@@ -25,6 +26,16 @@ class Contact extends Model
     public function emailAddress()
     {
         return $this->hasMany(EmailAddress::class);
+    }
+
+    public function phoneNumber()
+    {
+        return $this->hasMany(PhoneNumber::class);
+    }
+
+    public function socialMediaUrl()
+    {
+        return $this->hasMany(SocialMediaUrl::class);
     }
 
     protected static function boot()
