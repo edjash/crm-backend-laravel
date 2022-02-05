@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*://edcrm-dev.local:*', '*://192.168.*:*', '*://crmdemo.co.uk', '*://82.28.107.26', '82.28.107.26'],
+    'allowed_origins' => ['*://edcrm-dev.local:*', '*://192.168.*:*', '*://crmdemo.co.uk'],
 
     'allowed_origins_patterns' => [],
 
