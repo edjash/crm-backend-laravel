@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
-use App\Models\Address;
 use App\Models\SocialMediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class ContactController extends Controller
 {
@@ -71,6 +71,11 @@ class ContactController extends Controller
     public function update(Request $request, int $id)
     {
         $validatedData = $this->validateData($request);
+
+        if ($avatar = $this->saveAvatar($validatedData['avatar'])) {
+            $validatedData['avatar'] = $avatar;
+        }
+
         $contact = Contact::find($id);
         $contact->fill($validatedData);
         $contact->save();
@@ -103,10 +108,27 @@ class ContactController extends Controller
         return $this->getContacts($request);
     }
 
+    public function avatar(Request $request, $id)
+    {
+        if (!$id) {
+            return response("Contact ID expected", 400);
+        }
+
+        Validator::make($request->file(), [
+            'avatar' => 'mimes:jpeg,jpg,png,gif|max:10000'
+        ])->validate();
+
+        $hashName = 'tmp_' . $request->file('image')->hashName();
+        $path = $request->file('image')->storePubliclyAs('public/tmp_avatars', $hashName);
+
+        return response()->json(["filename" => basename($path)]);
+    }
+
     //Utility functions
     private function validateData(Request $request)
     {
         return Validator::make($request->all(), [
+            'avatar' => 'max:255',
             'title' => 'max:255',
             'pronouns' => 'max:255',
             'firstname' => 'required|max:255',
@@ -182,5 +204,24 @@ class ContactController extends Controller
             $instance->save();
             continue;
         }
+    }
+
+    private function saveAvatar($tmpfile)
+    {
+        if (!$tmpfile || substr($tmpfile, 0, 4) != 'tmp_') {
+            return false;
+        }
+
+        $newfile = str_replace('tmp_', '', $tmpfile);
+        if (!Storage::move(
+            'public/tmp_avatars/' . $tmpfile,
+            'public/avatars/' . $newfile
+        )) {
+            return false;
+        }
+
+        Storage::delete('public/tmp_avatars/' . $tmpfile);
+
+        return $newfile;
     }
 }
