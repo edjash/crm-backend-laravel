@@ -2,7 +2,10 @@
 
 /**
  * Outputs last entry in laravel.log without framework in stacktrace and with color highlighting.
- * Usage: php logv.php
+ * Usage: php logv.php [OPTION]
+ * Options:
+ * -n[NUM]    output the last NUM log entries, default is 1. Use -n0 for entire file.
+ * -f         continuously monnitor the file for changes
  */
 
 class LogView
