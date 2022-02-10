@@ -8,7 +8,6 @@
  *
  * Author: Ed Shortt <edjash@gmail.com>
  * Date: 10/02/2022
- * License: MIT
  */
 
 class LogView
