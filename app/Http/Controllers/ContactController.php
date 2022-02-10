@@ -76,6 +76,8 @@ class ContactController extends Controller
             $validatedData['avatar'] = $avatar;
         }
 
+        print_r($validatedData);
+
         $contact = Contact::find($id);
         $contact->fill($validatedData);
         $contact->save();
@@ -139,7 +141,7 @@ class ContactController extends Controller
             'address.*.town' => 'max:255',
             'address.*.county' => 'max:255',
             'address.*.postcode' => 'max:255',
-            'address.*.country' => 'max:3',
+            'address.*.country.*.value' => 'max:3',
             'address_deleted' => 'string|nullable',
             'email.*.id' => 'numeric',
             'email.*.label' => 'max:255',
