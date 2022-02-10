@@ -40,8 +40,3 @@ Route::get('/{any?}', function () {
 
     return view('index', $data);
 });
-
-Route::get('/test', function () {
-    // Mail::to('edjash@gmail.com')->send(new ResetPassword());
-    // die("XYZ");
-});
