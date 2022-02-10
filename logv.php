@@ -1,11 +1,13 @@
 <?php
-
 /**
- * Outputs last entry in laravel.log without framework in stacktrace and with color highlighting.
+ * Outputs formatted and filtered entries from the laravel log file.
  * Usage: php logv.php [OPTION]
  * Options:
  * -n[NUM]    output the last NUM log entries, default is 1. Use -n0 for entire file.
  * -f         continuously monnitor the file for changes
+ *
+ * Author: Ed Shortt <edjash@gmail.com>
+ * License: MIT
  */
 
 class LogView
@@ -123,7 +125,7 @@ class LogView
 
     private function getMainError(string $entry): string
     {
-        $matches = 0;
+        $matches = [];
         if (preg_match('/\[\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}\] (.+)/', $entry, $matches)) {
             return $matches[1];
         }
