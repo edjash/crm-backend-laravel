@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Outputs formatted and filtered entries from the laravel log file.
  * Usage: php logv.php [OPTION]
@@ -91,12 +92,17 @@ class LogView
             }
             $this->output("[stacktrace - filtered]", $stackTraceTitleColor);
             foreach ($stackArray as $index => $item) {
+                $this->output("Trace Number: {$item['traceNumber']}");
                 $this->output("File: {$item['file']}");
                 $this->output("Line: {$item['line']}");
-                $this->output("Method: {$item['method']}");
+                if ($item['method']) {
+                    $this->output("Method: {$item['method']}");
+                }
                 $this->output(($index < $count - 1) ? '----' : "");
             }
         }
+
+        $this->lines = "";
     }
 
     private function output(string $string, $color = "\e[39m")
@@ -143,7 +149,7 @@ class LogView
                 $found = true;
                 continue;
             }
-            if (!$found || !strpos($line, ':')) {
+            if (!$found) {
                 continue;
             }
 
@@ -154,10 +160,9 @@ class LogView
                 continue;
             }
             $file = str_replace(__DIR__, '', $matches[2]);
-            $method = trim($lineArr[1]);
+            $method = trim($lineArr[1] ?? '');
             if (
-                preg_match('/^\/vendor\//', $file) ||
-                preg_match('/^Illuminate\\\/', $method)
+                !preg_match('/^\/app\//', $file)
             ) {
                 continue;
             }
