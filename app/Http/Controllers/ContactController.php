@@ -40,7 +40,7 @@ class ContactController extends Controller
     {
         $contact = Contact::with(
             [
-                'address',
+                'address.country',
                 'emailAddress',
                 'phoneNumber',
                 'socialMediaUrl',
@@ -70,13 +70,35 @@ class ContactController extends Controller
 
     public function update(Request $request, int $id)
     {
-        $validatedData = $this->validateData($request);
+        $validatedData = Validator::make($request->all(), [
+            'avatar' => 'max:255',
+            'title' => 'max:2',
+            'pronouns' => 'max:255',
+            'firstname' => 'required|max:255',
+            'lastname' => 'max:255',
+            'address.*.id' => 'numeric',
+            'address.*.label' => 'max:255',
+            'address.*.street' => 'max:255',
+            'address.*.town' => 'max:255',
+            'address.*.county' => 'max:255',
+            'address.*.postcode' => 'max:255',
+            'address.*.country.*.value' => 'max:3',
+            'address_deleted' => 'string|nullable',
+            'email.*.id' => 'numeric',
+            'email.*.label' => 'max:255',
+            'email.*.address' => 'max:255',
+            'email_deleted' => 'string|nullable',
+            'phone.*.id' => 'numeric',
+            'phone.*.label' => 'max:255',
+            'phone.*.number' => 'max:255',
+            'phone_deleted' => 'string|nullable',
+            'socialmedia.*' => 'max:255',
+        ])->validate();
+
 
         if ($avatar = $this->saveAvatar($validatedData['avatar'])) {
             $validatedData['avatar'] = $avatar;
         }
-
-        print_r($validatedData);
 
         $contact = Contact::find($id);
         $contact->fill($validatedData);
@@ -131,7 +153,7 @@ class ContactController extends Controller
     {
         return Validator::make($request->all(), [
             'avatar' => 'max:255',
-            'title' => 'max:255',
+            'title' => 'max:2',
             'pronouns' => 'max:255',
             'firstname' => 'required|max:255',
             'lastname' => 'max:255',

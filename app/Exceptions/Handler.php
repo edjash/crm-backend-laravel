@@ -36,8 +36,13 @@ class Handler extends ExceptionHandler
     {
         $this->renderable(function (\Illuminate\Validation\ValidationException $e, $request) {
             if ($request->is('api/*')) {
-                return response()->json(["errors" => $e->errors()], 422);
-               // ->header('Access-Control-Allow-Origin', '*');
+                $failed = $e->validator->failed();
+                return response()->json([
+                    "validationErrors" => [
+                        "messages" => $e->validator->errors(),
+                        "failedRules" => $failed,
+                    ]
+                ], 422);
             }
         });
     }
