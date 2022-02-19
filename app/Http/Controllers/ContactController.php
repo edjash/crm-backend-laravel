@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Address;
 use App\Models\Contact;
 use App\Models\SocialMediaUrl;
 use Illuminate\Http\Request;
@@ -72,7 +73,7 @@ class ContactController extends Controller
     {
         $validatedData = Validator::make($request->all(), [
             'avatar' => 'max:255',
-            'title' => 'max:2',
+            'title' => 'max:255',
             'pronouns' => 'max:255',
             'firstname' => 'required|max:255',
             'lastname' => 'max:255',
@@ -82,7 +83,7 @@ class ContactController extends Controller
             'address.*.town' => 'max:255',
             'address.*.county' => 'max:255',
             'address.*.postcode' => 'max:255',
-            'address.*.country.*.value' => 'max:3',
+            'address.*.country' => 'max:3',
             'address_deleted' => 'string|nullable',
             'email.*.id' => 'numeric',
             'email.*.label' => 'max:255',
@@ -94,7 +95,6 @@ class ContactController extends Controller
             'phone_deleted' => 'string|nullable',
             'socialmedia.*' => 'max:255',
         ])->validate();
-
 
         if ($avatar = $this->saveAvatar($validatedData['avatar'])) {
             $validatedData['avatar'] = $avatar;
@@ -111,7 +111,7 @@ class ContactController extends Controller
         $this->insertUpdateItems('EmailAddress', $validatedData['email'] ?? [], $contact->id);
         $this->insertUpdateItems('PhoneNumber', $validatedData['phone'] ?? [], $contact->id);
 
-        foreach ($validatedData['socialmedia'] as $ident => $url) {
+        foreach ($validatedData['socialmedia'] ?? [] as $ident => $url) {
             if (!in_array($ident, ['facebook', 'instagram', 'twitter', 'linkedin'])) {
                 continue;
             }
