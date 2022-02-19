@@ -39,7 +39,7 @@ class AddressFactory extends Factory
         ];
 
         $full_address = array_filter($address);
-        $address['country'] = $countryCode;
+        $address['country_code'] = $countryCode;
         $address['full_address'] = implode(", ", $full_address);
 
         return $address;

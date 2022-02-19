@@ -28,8 +28,8 @@ class CreateAddressesTable extends Migration
             $table->string('street', 255)->nullable();
             $table->string('town', 255)->nullable();
             $table->string('county', 255)->nullable();
-            $table->string('country', 3)->nullable();
             $table->string('postcode', 255)->nullable();
+            $table->string('country_code', 3)->nullable();
             $table->string('country_name', 255)->nullable();
             $table->text('full_address')->nullable();
             $table->string('label', 255)->nullable();
