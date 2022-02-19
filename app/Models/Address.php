@@ -20,7 +20,7 @@ class Address extends Model
         'town',
         'county',
         'postcode',
-        'country_code',
+        'country',
         'country_name',
         'full_address',
         'label',
@@ -39,12 +39,12 @@ class Address extends Model
 
     public function country()
     {
-        return $this->hasOne(Country::class, 'code', 'country_code');
+        return $this->hasOne(Country::class, 'code', 'country');
     }
 
     public static function isEmpty($address): bool
     {
-        $required = ['street', 'town', 'county', 'postcode', 'country_code'];
+        $required = ['street', 'town', 'county', 'postcode', 'country'];
         $values = [];
         foreach ($required as $item) {
             $values[] = $address[$item] ?? '';
@@ -65,8 +65,8 @@ class Address extends Model
                 "country_name" => "",
             ];
 
-            if ($model->country_code) {
-                $country = Country::where('code', $model->country_code)->first();
+            if ($model->country) {
+                $country = Country::where('code', $model->country)->first();
                 if ($country) {
                     $address['country_name'] = $country->name;
                     $model->country_name = $country->name;
