@@ -71,30 +71,7 @@ class ContactController extends Controller
 
     public function update(Request $request, int $id)
     {
-        $validatedData = Validator::make($request->all(), [
-            'avatar' => 'max:255',
-            'title' => 'max:255',
-            'pronouns' => 'max:255',
-            'firstname' => 'required|max:255',
-            'lastname' => 'max:255',
-            'address.*.id' => 'numeric',
-            'address.*.label' => 'max:255',
-            'address.*.street' => 'max:255',
-            'address.*.town' => 'max:255',
-            'address.*.county' => 'max:255',
-            'address.*.postcode' => 'max:255',
-            'address.*.country' => 'max:3',
-            'address_deleted' => 'string|nullable',
-            'email.*.id' => 'numeric',
-            'email.*.label' => 'max:255',
-            'email.*.address' => 'max:255',
-            'email_deleted' => 'string|nullable',
-            'phone.*.id' => 'numeric',
-            'phone.*.label' => 'max:255',
-            'phone.*.number' => 'max:255',
-            'phone_deleted' => 'string|nullable',
-            'socialmedia.*' => 'max:255',
-        ])->validate();
+        $validatedData = $this->validateData($request);
 
         if ($avatar = $this->saveAvatar($validatedData['avatar'])) {
             $validatedData['avatar'] = $avatar;
@@ -142,8 +119,9 @@ class ContactController extends Controller
             'avatar' => 'mimes:jpeg,jpg,png,gif|max:10000'
         ])->validate();
 
-        $hashName = 'tmp_' . $request->file('image')->hashName();
-        $path = $request->file('image')->storePubliclyAs('public/tmp_avatars', $hashName);
+        $file = $request->file('avatar');
+        $hashName = 'tmp_' . $file->hashName();
+        $path = $file->storePubliclyAs('public/tmp_avatars', $hashName);
 
         return response()->json(["filename" => basename($path)]);
     }
@@ -153,7 +131,7 @@ class ContactController extends Controller
     {
         return Validator::make($request->all(), [
             'avatar' => 'max:255',
-            'title' => 'max:2',
+            'title' => 'max:255',
             'pronouns' => 'max:255',
             'firstname' => 'required|max:255',
             'lastname' => 'max:255',
@@ -163,7 +141,7 @@ class ContactController extends Controller
             'address.*.town' => 'max:255',
             'address.*.county' => 'max:255',
             'address.*.postcode' => 'max:255',
-            'address.*.country.*.value' => 'max:3',
+            'address.*.country' => 'max:3',
             'address_deleted' => 'string|nullable',
             'email.*.id' => 'numeric',
             'email.*.label' => 'max:255',
