@@ -214,15 +214,20 @@ class ContactController extends Controller
             return false;
         }
 
+        $tmppath = 'public/tmp_avatars/' . $tmpfile;
+        if (!Storage::exists($tmppath)) {
+            return false;
+        }
+
         $newfile = str_replace('tmp_', '', $tmpfile);
         if (!Storage::move(
-            'public/tmp_avatars/' . $tmpfile,
+            $tmppath,
             'public/avatars/' . $newfile
         )) {
             return false;
         }
 
-        Storage::delete('public/tmp_avatars/' . $tmpfile);
+        Storage::delete($tmppath);
 
         return $newfile;
     }
