@@ -42,7 +42,7 @@ class ContactController extends Controller
         $contact = Contact::with(
             [
                 'address.country',
-                'emailAddress',
+                'emailAddress:id AS dbid,contact_id,label,address',
                 'phoneNumber',
                 'socialMediaUrl',
             ]
@@ -135,7 +135,7 @@ class ContactController extends Controller
             'pronouns' => 'max:255',
             'firstname' => 'required|max:255',
             'lastname' => 'max:255',
-            'address.*.id' => 'numeric',
+            'address.*.dbid' => 'numeric',
             'address.*.label' => 'max:255',
             'address.*.street' => 'max:255',
             'address.*.town' => 'max:255',
@@ -143,11 +143,11 @@ class ContactController extends Controller
             'address.*.postcode' => 'max:255',
             'address.*.country' => 'max:3',
             'address_deleted' => 'string|nullable',
-            'email.*.id' => 'numeric',
+            'email.*.dbid' => 'numeric',
             'email.*.label' => 'max:255',
             'email.*.address' => 'max:255',
             'email_deleted' => 'string|nullable',
-            'phone.*.id' => 'numeric',
+            'phone.*.dbid' => 'numeric',
             'phone.*.label' => 'max:255',
             'phone.*.number' => 'max:255',
             'phone_deleted' => 'string|nullable',
@@ -184,21 +184,21 @@ class ContactController extends Controller
             $data["contact_id"] = $contact_id;
             $data["display_index"] = $index;
 
-            if (!($data['id'] ?? false)) {
+            if (!($data['dbid'] ?? false)) {
                 if (!$model::isEmpty($data)) {
                     $model::create($data);
                 }
                 continue;
             }
 
-            $instance = $model::find($data['id']);
+            $instance = $model::find($data['dbid']);
 
             if (!$instance || $instance->contact_id != $contact_id) {
                 continue;
             }
 
             if ($model::isEmpty($data)) {
-                $model::destroy($data['id']);
+                $model::destroy($data['dbid']);
                 continue;
             }
 
