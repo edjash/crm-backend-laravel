@@ -21,9 +21,19 @@ class ContactController extends Controller
     {
         $term = $request->input('search');
         if (!$term) {
-            return Contact::with(['address' => function ($query) {
-                $query->whereNull('company_id');
-            }])->paginate($request->limit);
+            return Contact::with(
+                [
+                    'address' => function ($query) {
+                        $query->whereNull('company_id');
+                    },
+                    'phoneNumber' => function ($query) {
+                        $query->whereNull('company_id');
+                    },
+                    'emailAddress' => function ($query) {
+                        $query->whereNull('company_id');
+                    }
+                ]
+            )->paginate($request->limit);
         } else {
             $builder = Contact::with(['address' => function ($query) {
                 $query->whereNull('company_id');
