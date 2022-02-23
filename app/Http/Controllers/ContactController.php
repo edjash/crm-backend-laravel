@@ -8,6 +8,7 @@ use App\Models\SocialMediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class ContactController extends Controller
 {
@@ -81,11 +82,11 @@ class ContactController extends Controller
         $contact->fill($validatedData);
         $contact->save();
 
-        $this->deleteItems('Address', $validatedData['address_deleted'] ?? '');
-        $this->deleteItems('EmailAddress', $validatedData['email_deleted'] ?? '');
-        $this->deleteItems('PhoneNumber', $validatedData['phone_deleted'] ?? '');
+        $this->deleteItems('Address', $validatedData['address_deleted'] ?? []);
+        $this->deleteItems('EmailAddress', $validatedData['email_address_deleted'] ?? []);
+        $this->deleteItems('PhoneNumber', $validatedData['phone_deleted'] ?? []);
         $this->insertUpdateItems('Address', $validatedData['address'] ?? [], $contact->id);
-        $this->insertUpdateItems('EmailAddress', $validatedData['email'] ?? [], $contact->id);
+        $this->insertUpdateItems('EmailAddress', $validatedData['email_address'] ?? [], $contact->id);
         $this->insertUpdateItems('PhoneNumber', $validatedData['phone'] ?? [], $contact->id);
 
         foreach ($validatedData['socialmedia'] ?? [] as $ident => $url) {
@@ -135,7 +136,7 @@ class ContactController extends Controller
             'pronouns' => 'max:255',
             'firstname' => 'required|max:255',
             'lastname' => 'max:255',
-            'address.*.dbid' => 'numeric',
+            'address.*.dbid' => 'numeric|nullable',
             'address.*.label' => 'max:255',
             'address.*.street' => 'max:255',
             'address.*.town' => 'max:255',
@@ -143,11 +144,11 @@ class ContactController extends Controller
             'address.*.postcode' => 'max:255',
             'address.*.country' => 'max:3',
             'address_deleted' => 'string|nullable',
-            'email.*.dbid' => 'numeric',
-            'email.*.label' => 'max:255',
-            'email.*.address' => 'max:255',
-            'email_deleted' => 'string|nullable',
-            'phone.*.dbid' => 'numeric',
+            'email_address.*.dbid' => 'numeric|nullable',
+            'email_address.*.label' => 'max:255',
+            'email_address.*.address' => 'max:255',
+            'email_address_deleted' => 'array|nullable',
+            'phone.*.dbid' => 'numeric|nullable',
             'phone.*.label' => 'max:255',
             'phone.*.number' => 'max:255',
             'phone_deleted' => 'string|nullable',
@@ -155,23 +156,24 @@ class ContactController extends Controller
         ])->validate();
     }
 
-    private function deleteItems($modelName, $list)
+    private function deleteItems($modelName, array $list)
     {
         $model = "App\\Models\\$modelName";
+        $list  = array_unique($list);
 
-        if (!$list) {
+        if (!count($list)) {
             return;
         }
-        $list = explode(",", $list);
+
         foreach ($list as $id) {
-            $id = trim($id);
+            $id = intval(trim($id));
             if ($id) {
                 $model::destroy($id);
             }
         }
     }
 
-    private function insertUpdateItems($modelName, $list, $contact_id)
+    private function insertUpdateItems($modelName, array $list, $contact_id)
     {
         $model = "App\\Models\\$modelName";
 
@@ -191,14 +193,17 @@ class ContactController extends Controller
                 continue;
             }
 
-            $instance = $model::find($data['dbid']);
+            $id = intval($data['dbid']);
+            unset($data['dbid']);
+
+            $instance = $model::find($id);
 
             if (!$instance || $instance->contact_id != $contact_id) {
                 continue;
             }
 
             if ($model::isEmpty($data)) {
-                $model::destroy($data['dbid']);
+                $model::destroy($id);
                 continue;
             }
 
