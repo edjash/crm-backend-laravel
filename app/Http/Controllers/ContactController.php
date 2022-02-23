@@ -93,10 +93,10 @@ class ContactController extends Controller
 
         $this->deleteItems('Address', $validatedData['address_deleted'] ?? []);
         $this->deleteItems('EmailAddress', $validatedData['email_address_deleted'] ?? []);
-        $this->deleteItems('PhoneNumber', $validatedData['phone_deleted'] ?? []);
+        $this->deleteItems('PhoneNumber', $validatedData['phone_number_deleted'] ?? []);
         $this->insertUpdateItems('Address', $validatedData['address'] ?? [], $contact->id);
         $this->insertUpdateItems('EmailAddress', $validatedData['email_address'] ?? [], $contact->id);
-        $this->insertUpdateItems('PhoneNumber', $validatedData['phone'] ?? [], $contact->id);
+        $this->insertUpdateItems('PhoneNumber', $validatedData['phone_number'] ?? [], $contact->id);
 
         foreach ($validatedData['socialmedia'] ?? [] as $ident => $url) {
             if (!in_array($ident, ['facebook', 'instagram', 'twitter', 'linkedin'])) {
@@ -157,10 +157,10 @@ class ContactController extends Controller
             'email_address.*.label' => 'max:255',
             'email_address.*.address' => 'max:255',
             'email_address_deleted' => 'array|nullable',
-            'phone.*.id' => 'numeric|nullable',
-            'phone.*.label' => 'max:255',
-            'phone.*.number' => 'max:255',
-            'phone_deleted' => 'array|nullable',
+            'phone_number.*.id' => 'numeric|nullable',
+            'phone_number.*.label' => 'max:255',
+            'phone_number.*.number' => 'max:255',
+            'phone_number_deleted' => 'array|nullable',
             'socialmedia.*' => 'max:255',
         ])->validate();
     }
