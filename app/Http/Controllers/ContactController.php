@@ -43,7 +43,7 @@ class ContactController extends Controller
         $contact = Contact::with(
             [
                 'address.country',
-                'emailAddress:id AS dbid,contact_id,label,address',
+                'emailAddress',
                 'phoneNumber',
                 'socialMediaUrl',
             ]
@@ -136,7 +136,7 @@ class ContactController extends Controller
             'pronouns' => 'max:255',
             'firstname' => 'required|max:255',
             'lastname' => 'max:255',
-            'address.*.dbid' => 'numeric|nullable',
+            'address.*.id' => 'numeric|nullable',
             'address.*.label' => 'max:255',
             'address.*.street' => 'max:255',
             'address.*.town' => 'max:255',
@@ -144,11 +144,11 @@ class ContactController extends Controller
             'address.*.postcode' => 'max:255',
             'address.*.country' => 'max:3',
             'address_deleted' => 'string|nullable',
-            'email_address.*.dbid' => 'numeric|nullable',
+            'email_address.*.id' => 'numeric|nullable',
             'email_address.*.label' => 'max:255',
             'email_address.*.address' => 'max:255',
             'email_address_deleted' => 'array|nullable',
-            'phone.*.dbid' => 'numeric|nullable',
+            'phone.*.id' => 'numeric|nullable',
             'phone.*.label' => 'max:255',
             'phone.*.number' => 'max:255',
             'phone_deleted' => 'string|nullable',
@@ -186,15 +186,15 @@ class ContactController extends Controller
             $data["contact_id"] = $contact_id;
             $data["display_index"] = $index;
 
-            if (!($data['dbid'] ?? false)) {
+            if (!($data['id'] ?? false)) {
                 if (!$model::isEmpty($data)) {
                     $model::create($data);
                 }
                 continue;
             }
 
-            $id = intval($data['dbid']);
-            unset($data['dbid']);
+            $id = intval($data['id']);
+            unset($data['id']);
 
             $instance = $model::find($id);
 
