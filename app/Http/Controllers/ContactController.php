@@ -47,7 +47,16 @@ class ContactController extends Controller
                 'phoneNumber',
                 'socialMediaUrl',
             ]
-        )->find($id);
+        )->find($id)->toArray();
+
+        foreach ($contact['address'] as $index => $address) {
+            if ($address['country']) {
+                $address['country_code'] = $address['country']['code'];
+                $address['country_name'] = $address['country']['name'];
+            }
+            unset($address['country']);
+            $contact['address'][$index] = $address;
+        }
 
         return response()->json($contact);
     }
@@ -143,7 +152,7 @@ class ContactController extends Controller
             'address.*.county' => 'max:255',
             'address.*.postcode' => 'max:255',
             'address.*.country' => 'max:3',
-            'address_deleted' => 'string|nullable',
+            'address_deleted' => 'array|nullable',
             'email_address.*.id' => 'numeric|nullable',
             'email_address.*.label' => 'max:255',
             'email_address.*.address' => 'max:255',
@@ -151,7 +160,7 @@ class ContactController extends Controller
             'phone.*.id' => 'numeric|nullable',
             'phone.*.label' => 'max:255',
             'phone.*.number' => 'max:255',
-            'phone_deleted' => 'string|nullable',
+            'phone_deleted' => 'array|nullable',
             'socialmedia.*' => 'max:255',
         ])->validate();
     }
