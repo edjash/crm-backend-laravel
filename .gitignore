@@ -4,8 +4,8 @@
 /public/.well-known
 /public/frontend
 /storage/*.key
+/storage/app/public
 /vendor
-!/storage/app/seed_avatars
 .env
 .env.backup
 .phpunit.result.cache

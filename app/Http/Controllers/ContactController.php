@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Address;
 use App\Models\Contact;
 use App\Models\SocialMediaUrl;
+use Facade\Ignition\Support\LaravelVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -135,6 +136,12 @@ class ContactController extends Controller
             return response("Contact ID expected", 400);
         }
 
+        if (!is_writable(storage_path('app/public/tmp_avatars'))) {
+            return response()->json([
+                "error" => "No filesystem permission to store temporary avatar."
+            ], 500);
+        }
+
         Validator::make($request->file(), [
             'avatar' => 'mimes:jpeg,jpg,png,gif|max:10000'
         ])->validate();
@@ -235,6 +242,11 @@ class ContactController extends Controller
     private function saveAvatar($tmpfile)
     {
         if (!$tmpfile || substr($tmpfile, 0, 4) != 'tmp_') {
+            return false;
+        }
+
+        if (!is_writable(storage_path('app/public/avatars'))) {
+            Log::error(storage_path('app/public/avatars') . ' is not writeable');
             return false;
         }
 
