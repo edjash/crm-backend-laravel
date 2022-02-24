@@ -21,8 +21,16 @@ class PhoneNumberFactory extends Factory
      */
     public function definition()
     {
+        $number = $this->faker->phoneNumber();
+        while (true) {
+            if (substr_count($number, '-') < 2 && !strpos($number, '.')) {
+                break;
+            }
+            $number = $this->faker->phoneNumber();
+        }
+
         $phone_number = [
-            'number' => $this->faker->phoneNumber(),
+            'number' => $number,
         ];
 
         return $phone_number;
