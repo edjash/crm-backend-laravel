@@ -5,6 +5,7 @@
 /public/frontend
 /storage/*.key
 /vendor
+!/storage/app/seed_avatars
 .env
 .env.backup
 .phpunit.result.cache
