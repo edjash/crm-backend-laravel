@@ -21,8 +21,16 @@ class EmailAddressFactory extends Factory
      */
     public function definition()
     {
+        $email = $this->faker->email();
+        while (true) {
+            if (!strpos($email, 'gaylord')) {
+                break;
+            }
+            $email = $this->faker->email();
+        }
+
         $email_address = [
-            'address' => $this->faker->email(),
+            'address' => $email,
         ];
 
         return $email_address;
