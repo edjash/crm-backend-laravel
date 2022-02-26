@@ -27,10 +27,7 @@ class AuthController extends Controller
 
         Mail::to($user)->send(new Registered($user));
 
-        $token = $user->createToken('auth_token')->plainTextToken;
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
             "user" => $user,
         ]);
     }
@@ -50,13 +47,11 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $request->session()->regenerate();
+
         $user = User::where('email', $validatedData['email'])->firstOrFail();
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
             "user" => $user,
         ]);
     }

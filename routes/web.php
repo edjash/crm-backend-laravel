@@ -1,18 +1,20 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Mail\ResetPassword;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\File;
-
+use App\Http\Controllers\AuthController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
 
-Route::get('/{any?}', function () {
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [PasswordResetController::class, 'index']);
 
+Route::get('/{any?}', function () {
+    die("OK");
     $data = [
         "index_js" => "",
         "vendor_js" => "",
