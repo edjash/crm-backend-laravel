@@ -50,7 +50,6 @@ class ContactsSeeder extends Seeder
                 ]);
         }
 
-        return;
         Contact::factory()
             ->count(20)
             ->hasAddress(1)

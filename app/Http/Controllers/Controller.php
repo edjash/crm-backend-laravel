@@ -11,14 +11,4 @@ use Illuminate\Http\Request;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-
-    public function jsonError(string $error, int $code, $name = "error")
-    {
-        $data = [
-            "errors" => [$name => [$error]],
-            "errorType" => $name
-        ];
-
-        return response()->json($data, $code);
-    }
 }

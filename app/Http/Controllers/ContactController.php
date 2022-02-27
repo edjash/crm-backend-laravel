@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Address;
 use App\Models\Contact;
 use App\Models\SocialMediaUrl;
-use Facade\Ignition\Support\LaravelVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -14,11 +13,6 @@ use Illuminate\Support\Facades\Log;
 class ContactController extends Controller
 {
     public function index(Request $request)
-    {
-        return response()->json($this->getContacts($request));
-    }
-
-    public function getContacts(Request $request)
     {
         $term = $request->input('search');
         if (!$term) {
@@ -75,7 +69,7 @@ class ContactController extends Controller
     public function create(Request $request)
     {
         $validatedData = $this->validateData($request);
- 
+
         $contact = Contact::create([
             'title' => $validatedData['title'] ?? '',
             'pronouns' => $validatedData['pronouns'] ?? '',
@@ -96,7 +90,7 @@ class ContactController extends Controller
     {
         $validatedData = $this->validateData($request);
         $validatedData['avatar'] = $this->saveAvatar($validatedData['avatar'] ?? '');
-     
+
         $contact = Contact::find($id);
         $contact->fill($validatedData);
         $contact->save();
