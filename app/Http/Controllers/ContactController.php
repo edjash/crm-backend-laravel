@@ -75,12 +75,13 @@ class ContactController extends Controller
     public function create(Request $request)
     {
         $validatedData = $this->validateData($request);
-
+ 
         $contact = Contact::create([
             'title' => $validatedData['title'] ?? '',
             'pronouns' => $validatedData['pronouns'] ?? '',
             'firstname' => $validatedData['firstname'] ?? "",
             'lastname' => $validatedData['lastname'] ?? "",
+            'avatar' => $this->saveAvatar($validatedData['avatar'] ?? ''),
         ]);
 
         $this->insertUpdateArrayItems('Address', $validatedData['address'] ?? [], $contact->id);
@@ -94,11 +95,8 @@ class ContactController extends Controller
     public function update(Request $request, int $id)
     {
         $validatedData = $this->validateData($request);
-        
-        if ($avatar = $this->saveAvatar($validatedData['avatar'])) {
-            $validatedData['avatar'] = $avatar;
-        }
-
+        $validatedData['avatar'] = $this->saveAvatar($validatedData['avatar'] ?? '');
+     
         $contact = Contact::find($id);
         $contact->fill($validatedData);
         $contact->save();
@@ -121,12 +119,8 @@ class ContactController extends Controller
         return $this->getContacts($request);
     }
 
-    public function avatar(Request $request, $id)
+    public function uploadAvatar(Request $request)
     {
-        if (!$id) {
-            return response("Contact ID expected", 400);
-        }
-
         if (!is_writable(storage_path('app/public/tmp_avatars'))) {
             return response()->json([
                 "error" => "No filesystem permission to store temporary avatar."
@@ -243,20 +237,20 @@ class ContactController extends Controller
         }
     }
 
-    private function saveAvatar($tmpfile)
+    private function saveAvatar($tmpfile): string
     {
         if (!$tmpfile || substr($tmpfile, 0, 4) != 'tmp_') {
-            return false;
+            return '';
         }
 
         if (!is_writable(storage_path('app/public/avatars'))) {
             Log::error(storage_path('app/public/avatars') . ' is not writeable');
-            return false;
+            return '';
         }
 
         $tmppath = 'public/tmp_avatars/' . $tmpfile;
         if (!Storage::exists($tmppath)) {
-            return false;
+            return '';
         }
 
         $newfile = str_replace('tmp_', '', $tmpfile);
@@ -264,7 +258,7 @@ class ContactController extends Controller
             $tmppath,
             'public/avatars/' . $newfile
         )) {
-            return false;
+            return '';
         }
 
         Storage::delete($tmppath);

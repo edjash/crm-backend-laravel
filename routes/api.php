@@ -18,7 +18,7 @@ Route::get('/countries', [CountriesController::class, 'index'])->middleware('aut
 
 Route::controller(ContactController::class)->middleware('auth:sanctum')->group(function () {
     Route::get('/contacts', 'index');
-    Route::post('/contacts/avatar/{id?}', 'avatar');
+    Route::post('/contacts/avatar', 'uploadAvatar');
     Route::get('/contacts/{id}', 'getContact');
     Route::post('/contacts/{id}', 'update');
     Route::post('/contacts', 'create');
