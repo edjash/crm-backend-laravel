@@ -83,9 +83,10 @@ class ContactController extends Controller
             'lastname' => $validatedData['lastname'] ?? "",
         ]);
 
-        $this->insertUpdateItems('Address', $validatedData['address'] ?? [], $contact->id);
-        $this->insertUpdateItems('EmailAddress', $validatedData['email'] ?? [], $contact->id);
-        $this->insertUpdateItems('PhoneNumber', $validatedData['phone'] ?? [], $contact->id);
+        $this->insertUpdateArrayItems('Address', $validatedData['address'] ?? [], $contact->id);
+        $this->insertUpdateArrayItems('EmailAddress', $validatedData['email_address'] ?? [], $contact->id);
+        $this->insertUpdateArrayItems('PhoneNumber', $validatedData['phone_number'] ?? [], $contact->id);
+        $this->saveSocialMedia($validatedData['socialmedia'] ?? [], $contact->id);
 
         return response()->json(["contact" => $contact]);
     }
@@ -101,23 +102,13 @@ class ContactController extends Controller
         $contact = Contact::find($id);
         $contact->fill($validatedData);
         $contact->save();
-
-        $this->deleteItems('Address', $validatedData['address_deleted'] ?? []);
-        $this->deleteItems('EmailAddress', $validatedData['email_address_deleted'] ?? []);
-        $this->deleteItems('PhoneNumber', $validatedData['phone_number_deleted'] ?? []);
-        $this->insertUpdateItems('Address', $validatedData['address'] ?? [], $contact->id);
-        $this->insertUpdateItems('EmailAddress', $validatedData['email_address'] ?? [], $contact->id);
-        $this->insertUpdateItems('PhoneNumber', $validatedData['phone_number'] ?? [], $contact->id);
-
-        foreach ($validatedData['socialmedia'] ?? [] as $ident => $url) {
-            if (!in_array($ident, ['facebook', 'instagram', 'twitter', 'linkedin'])) {
-                continue;
-            }
-            SocialMediaUrl::updateOrCreate(
-                ["contact_id" => $contact->id, "ident" => $ident],
-                ["ident" => $ident, "url" => $url]
-            );
-        }
+        $this->deleteArrayItems('Address', $validatedData['address_deleted'] ?? []);
+        $this->deleteArrayItems('EmailAddress', $validatedData['email_address_deleted'] ?? []);
+        $this->deleteArrayItems('PhoneNumber', $validatedData['phone_number_deleted'] ?? []);
+        $this->insertUpdateArrayItems('Address', $validatedData['address'] ?? [], $contact->id);
+        $this->insertUpdateArrayItems('EmailAddress', $validatedData['email_address'] ?? [], $contact->id);
+        $this->insertUpdateArrayItems('PhoneNumber', $validatedData['phone_number'] ?? [], $contact->id);
+        $this->saveSocialMedia($validatedData['socialmedia'] ?? [], $contact->id);
 
         return response()->json(["contact" => $contact]);
     }
@@ -182,7 +173,7 @@ class ContactController extends Controller
         ])->validate();
     }
 
-    private function deleteItems($modelName, array $list)
+    private function deleteArrayItems($modelName, array $list)
     {
         $model = "App\\Models\\$modelName";
         $list  = array_unique($list);
@@ -199,7 +190,7 @@ class ContactController extends Controller
         }
     }
 
-    private function insertUpdateItems($modelName, array $list, $contact_id)
+    private function insertUpdateArrayItems($modelName, array $list, $contact_id)
     {
         $model = "App\\Models\\$modelName";
 
@@ -236,6 +227,19 @@ class ContactController extends Controller
             $instance->fill($data);
             $instance->save();
             continue;
+        }
+    }
+
+    private function saveSocialMedia($data, $contact_id)
+    {
+        foreach ($data as $ident => $url) {
+            if (!in_array($ident, ['facebook', 'instagram', 'twitter', 'linkedin'])) {
+                continue;
+            }
+            SocialMediaUrl::updateOrCreate(
+                ["contact_id" => $contact_id, "ident" => $ident],
+                ["ident" => $ident, "url" => $url]
+            );
         }
     }
 
