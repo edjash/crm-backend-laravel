@@ -94,7 +94,7 @@ class ContactController extends Controller
     public function update(Request $request, int $id)
     {
         $validatedData = $this->validateData($request);
-
+        
         if ($avatar = $this->saveAvatar($validatedData['avatar'])) {
             $validatedData['avatar'] = $avatar;
         }
@@ -169,7 +169,7 @@ class ContactController extends Controller
             'phone_number.*.label' => 'max:255',
             'phone_number.*.number' => 'max:255',
             'phone_number_deleted' => 'array|nullable',
-            'socialmedia.*' => 'max:255',
+            'socialmedia.*' => 'string|nullable|max:255',
         ])->validate();
     }
 
