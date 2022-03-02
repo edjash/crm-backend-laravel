@@ -3,6 +3,8 @@
 /public/storage
 /public/.well-known
 /public/frontend
+/public/static
+/public/build
 /storage/*.key
 /storage/app/public
 /vendor

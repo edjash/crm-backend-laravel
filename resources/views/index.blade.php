@@ -4,13 +4,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="robots" content="noindex,nofollow">
-    <link rel="icon" type="image/svg+xml" href="/js/frontend/{{ $favicon }}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CRM Demo</title>
-    <script type="module" crossorigin src="/frontend/{{ $index_js }}"></script>
-    <link rel="modulepreload" href="/frontend/{{ $vendor_js }}">
 </head>
-
+    <script defer="defer" src="{{$main_js}}"></script>
+</head>
 <body>
     <div id="root"></div>
 
