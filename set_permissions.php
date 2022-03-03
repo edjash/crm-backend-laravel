@@ -3,7 +3,7 @@ $basedir = rtrim(__DIR__, '/') . '/';
 $apacheUser = getenv('APACHE_RUN_USER');
 if (!$apacheUser) {
     $output = exec('apachectl -S 2>/dev/null | grep User');
-    $apacheUser = preg_match('/name="([^"]+)"/', $output, $match) ? $match[1] : 'www-data';
+    $apacheUser = preg_match('/name="([^"]+)"/', $output, $match) ? $match[1] : get_current_user();
 }
 
 $user = get_current_user();
