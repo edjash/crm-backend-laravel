@@ -1,7 +1,10 @@
 <?php
 $basedir = rtrim(__DIR__, '/') . '/';
-$output = exec('apachectl -S 2>/dev/null | grep User');
-$apacheUser = preg_match('/name="([^"]+)"/', $output, $match) ? $match[1] : 'www-data';
+$apacheUser = getenv('APACHE_RUN_USER');
+if (!$apacheUser) {
+    $output = exec('apachectl -S 2>/dev/null | grep User');
+    $apacheUser = preg_match('/name="([^"]+)"/', $output, $match) ? $match[1] : 'www-data';
+}
 
 $user = get_current_user();
 $group = $apacheUser;
