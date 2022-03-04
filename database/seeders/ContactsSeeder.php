@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Contact;
+use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
-use Faker\Factory as Faker;
-use App\Models\Contact;
 
 class ContactsSeeder extends Seeder
 {
@@ -28,8 +28,26 @@ class ContactsSeeder extends Seeder
             }
 
             $gender = (strpos($fname, 'female') === 0) ? 'female' : 'male';
-            $dest = '/public/avatars/' . $fname;
+            $title = str_replace('.', '', $faker->title($gender));
+            $firstName = $faker->firstName($gender);
+            while ($lastName = $faker->lastName()) {
+                if ($lastName != 'Morissette') {
+                    break;
+                }
+            }
 
+            if (strpos($fname, 'female_3') === 0) {
+                $title = 'Miss';
+                $firstName = 'Misty';
+                $lastName = 'S.';
+            }
+            if (strpos($fname, 'female_4') === 0) {
+                $title = 'Miss';
+                $firstName = 'Sasha';
+                $lastName = 'S.';
+            }
+
+            $dest = '/public/avatars/' . $fname;
             if (Storage::exists($dest)) {
                 Storage::delete($dest);
             }
@@ -43,10 +61,10 @@ class ContactsSeeder extends Seeder
                 ->hasEmailAddress(1)
                 ->hasPhoneNumber(1)
                 ->create([
-                    'title' => str_replace('.', '', $faker->title($gender)),
-                    'firstname' => $faker->firstName($gender),
-                    'lastname' => $faker->lastName,
-                    'avatar' => $fname
+                    'title' => $title,
+                    'firstname' => $firstName,
+                    'lastname' => $lastName,
+                    'avatar' => $fname,
                 ]);
         }
 
