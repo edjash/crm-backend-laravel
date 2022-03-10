@@ -27,6 +27,21 @@ function set_perms($dir, $recursive)
     `chmod$r $mode $dir`;
 }
 
+function create_and_set($dir)
+{
+    $name = basename($dir);
+    if (!is_dir($dir)) {
+        output("$name directory does not exist. Creating...");
+        if (@mkdir($dir)) {
+            output("Created $name directory");
+        } else {
+            output("Error: Failed to create $name directory: '$dir'", true);
+        }
+    }
+    output("Setting permissions for $name directory.");
+    set_perms($dir, true);
+}
+
 echo "Ownership of specific files and folders will be set to: $user:$group\n";
 echo "Mode of specific files and folders will be set to: $mode\n";
 //storage directory
@@ -36,31 +51,9 @@ set_perms($basedir . 'storage', true);
 output("Setting permissions for bootstrap/cache directory.");
 set_perms($basedir . 'bootstrap/cache', true);
 
-//storage/app/public/avatar Directory
-$avatars_dir = $basedir . 'storage/app/public/avatars';
-if (!is_dir($avatars_dir)) {
-    output('avatars directory does not exist. Creating...');
-    if (@mkdir($avatars_dir)) {
-        output("Created avatars directory");
-    } else {
-        output("Error: Failed to create avatars directory", true);
-    }
-}
-output("Setting permissions for avatars directory.");
-set_perms($avatars_dir, true);
-
-//storage/app/public/tmp_avatars Directory
-$tmp_avatars_dir = $basedir . 'storage/app/public/tmp_avatars';
-if (!is_dir($tmp_avatars_dir)) {
-    output('tmp_avatars directory does not exist. Creating...');
-    if (@mkdir($tmp_avatars_dir)) {
-        output("Created tmp_avatars directory");
-    } else {
-        output("Error: Failed to create tmp_avatars directory", true);
-    }
-}
-output("Setting permissions for tmp_avatars directory.");
-set_perms($tmp_avatars_dir, true);
+create_and_set($basedir . 'storage/app/public');
+create_and_set($basedir . 'storage/app/avatars');
+create_and_set($basedir . 'storage/app/tmp_avatars');
 
 //Symlink from public/storage to storage/app/public
 $link_target = $basedir . 'storage/app/public';
