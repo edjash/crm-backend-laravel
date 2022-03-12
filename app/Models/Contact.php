@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Contact extends Model
 {
@@ -17,7 +18,6 @@ class Contact extends Model
         'fullname',
         'avatar',
     ];
-
 
     public function address()
     {
@@ -42,9 +42,16 @@ class Contact extends Model
     protected static function boot()
     {
         parent::boot();
+
         Contact::saving(function ($model) {
             $fullname = trim($model->firstname . ' ' . $model->lastname);
             $model->fullname = $fullname;
+        });
+
+        Contact::deleting(function ($model) {
+            if ($model->avatar) {
+                Storage::delete('public/avatars/' . $model->avatar);
+            }
         });
     }
 }

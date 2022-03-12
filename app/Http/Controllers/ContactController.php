@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Address;
 use App\Models\Contact;
 use App\Models\SocialMediaUrl;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ContactController extends Controller
 {
@@ -26,7 +25,7 @@ class ContactController extends Controller
                     },
                     'emailAddress' => function ($query) {
                         $query->whereNull('company_id');
-                    }
+                    },
                 ]
             )->paginate($request->limit);
         } else {
@@ -35,7 +34,7 @@ class ContactController extends Controller
             }])->where('contacts.fullname', 'LIKE', "%{$term}%")
                 ->orWhereHas('address', function ($query) use ($term) {
                     $query->where([
-                        ['full_address', 'LIKE', "%{$term}%"]
+                        ['full_address', 'LIKE', "%{$term}%"],
                     ])->whereNull('company_id');
                 });
 
@@ -110,19 +109,19 @@ class ContactController extends Controller
         $ids = array_map('intval', explode(",", $ids));
         Contact::destroy($ids);
 
-        return $this->getContacts($request);
+        return $this->index($request);
     }
 
     public function uploadAvatar(Request $request)
     {
         if (!is_writable(storage_path('app/public/tmp_avatars'))) {
             return response()->json([
-                "error" => "No filesystem permission to store temporary avatar."
+                "error" => "No filesystem permission to store temporary avatar.",
             ], 500);
         }
 
         Validator::make($request->file(), [
-            'avatar' => 'mimes:jpeg,jpg,png,gif|max:10000'
+            'avatar' => 'mimes:jpeg,jpg,png,gif|max:10000',
         ])->validate();
 
         $file = $request->file('avatar');
@@ -164,7 +163,7 @@ class ContactController extends Controller
     private function deleteArrayItems($modelName, array $list)
     {
         $model = "App\\Models\\$modelName";
-        $list  = array_unique($list);
+        $list = array_unique($list);
 
         if (!count($list)) {
             return;
