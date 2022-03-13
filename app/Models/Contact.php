@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 
 class Contact extends Model
 {
@@ -49,7 +48,6 @@ class Contact extends Model
             $model->fullname = $fullname;
 
             if (!$model->avatar && $model->getOriginal('avatar')) {
-                Log::error("DELETED AVATAR: ".$model->avatar);
                 Storage::delete('public/avatars/' . $model->getOriginal('avatar'));
             }
         });
