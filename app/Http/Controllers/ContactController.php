@@ -89,7 +89,6 @@ class ContactController extends Controller
     {
         $validatedData = $this->validateData($request);
         $validatedData['avatar'] = $this->saveAvatar($validatedData['avatar'] ?? '');
-
         $contact = Contact::find($id);
         $contact->fill($validatedData);
         $contact->save();
@@ -230,10 +229,10 @@ class ContactController extends Controller
         }
     }
 
-    private function saveAvatar($tmpfile): string
+    private function saveAvatar($file): string
     {
-        if (!$tmpfile || substr($tmpfile, 0, 4) != 'tmp_') {
-            return '';
+        if (!$file || (substr($file, 0, 4) !== 'tmp_')) {
+            return $file;
         }
 
         if (!is_writable(storage_path('app/public/avatars'))) {
@@ -241,12 +240,12 @@ class ContactController extends Controller
             return '';
         }
 
-        $tmppath = 'public/tmp_avatars/' . $tmpfile;
+        $tmppath = 'public/tmp_avatars/' . $file;
         if (!Storage::exists($tmppath)) {
             return '';
         }
 
-        $newfile = str_replace('tmp_', '', $tmpfile);
+        $newfile = str_replace('tmp_', '', $file);
         if (!Storage::move(
             $tmppath,
             'public/avatars/' . $newfile
