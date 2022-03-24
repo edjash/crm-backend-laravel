@@ -37,7 +37,7 @@ class AvatarsClean extends Command
      */
     private function cleanTmpAvatars()
     {
-        $files = Storage::files('public/tmp_avatars');
+        $files = Storage::files('public/avatars/tmp');
         $path = storage_path('app');
         $yesterday = strtotime("-1 day");
 
@@ -54,13 +54,31 @@ class AvatarsClean extends Command
      */
     private function cleanAvatars()
     {
-        $files = Storage::files('public/avatars');
-        $path = storage_path('app');
-
+        $files = Storage::allFiles('public/avatars/large');
+        $existant = [];
         foreach ($files as $file) {
             $basename = basename($file);
             if (!DB::table('contacts')->where('avatar', '=', $basename)->exists()) {
                 Storage::delete($file);
+                Storage::delete('public/avatars/medium/' . $basename);
+                Storage::delete('public/avatars/small/' . $basename);
+            } else {
+                $existant[] = $basename;
+            }
+        }
+
+        $paths = [
+            'public/avatars/medium',
+            'public/avatars/small',
+        ];
+
+        foreach ($paths as $path) {
+            $files = Storage::allFiles($path);
+            foreach ($files as $file) {
+                $basename = basename($file);
+                if (!in_array($basename, $existant)) {
+                    Storage::delete($file);
+                }
             }
         }
     }

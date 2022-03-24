@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Intervention\Image\Facades\Image;
 
 class ContactController extends Controller
 {
@@ -74,7 +75,7 @@ class ContactController extends Controller
             'pronouns' => $validatedData['pronouns'] ?? '',
             'firstname' => $validatedData['firstname'] ?? "",
             'lastname' => $validatedData['lastname'] ?? "",
-            'avatar' => $this->saveAvatar($validatedData['avatar'] ?? ''),
+            'avatar' => $this->saveFinalAvatar($validatedData['avatar'] ?? ''),
         ]);
 
         $this->insertUpdateArrayItems('Address', $validatedData['address'] ?? [], $contact->id);
@@ -88,7 +89,7 @@ class ContactController extends Controller
     public function update(Request $request, int $id)
     {
         $validatedData = $this->validateData($request);
-        $validatedData['avatar'] = $this->saveAvatar($validatedData['avatar'] ?? '');
+        $validatedData['avatar'] = $this->saveFinalAvatar($validatedData['avatar'] ?? '');
         $contact = Contact::find($id);
         $contact->fill($validatedData);
         $contact->save();
@@ -113,7 +114,7 @@ class ContactController extends Controller
 
     public function uploadAvatar(Request $request)
     {
-        if (!is_writable(storage_path('app/public/tmp_avatars'))) {
+        if (!is_writable(storage_path('app/public/avatars/tmp'))) {
             return response()->json([
                 "error" => "No filesystem permission to store temporary avatar.",
             ], 500);
@@ -125,7 +126,7 @@ class ContactController extends Controller
 
         $file = $request->file('avatar');
         $hashName = 'tmp_' . $file->hashName();
-        $path = $file->storePubliclyAs('public/tmp_avatars', $hashName);
+        $path = $file->storePubliclyAs('public/avatars/tmp', $hashName);
 
         return response()->json(["filename" => basename($path)]);
     }
@@ -229,7 +230,7 @@ class ContactController extends Controller
         }
     }
 
-    private function saveAvatar($file): string
+    private function saveFinalAvatar($file): string
     {
         if (!$file || (substr($file, 0, 4) !== 'tmp_')) {
             return $file;
@@ -240,20 +241,34 @@ class ContactController extends Controller
             return '';
         }
 
-        $tmppath = 'public/tmp_avatars/' . $file;
-        if (!Storage::exists($tmppath)) {
-            return '';
-        }
-
+        $tmpfile = 'public/avatars/tmp/' . $file;
         $newfile = str_replace('tmp_', '', $file);
-        if (!Storage::move(
-            $tmppath,
-            'public/avatars/' . $newfile
-        )) {
+        if (!Storage::exists($tmpfile)) {
             return '';
         }
 
-        Storage::delete($tmppath);
+        $targets = [
+            ['path' => 'public/avatars/large/', 'width' => 500, 'height' => 500],
+            ['path' => 'public/avatars/medium/', 'width' => 100, 'height' => 100],
+            ['path' => 'public/avatars/small/', 'width' => 40, 'height' => 40],
+        ];
+
+        foreach ($targets as $target) {
+            $fname = basename($newfile);
+            $dst = $target['path'] . $fname;
+            //resize new image
+            if ($target['width'] && $target['height']) {
+                $xsrc = storage_path('app/' . $tmpfile);
+                $xdst = storage_path('app/' . $dst);
+                $img = Image::make($xsrc);
+                $img->resize($target['width'], $target['height']);
+                $img->save($xdst);
+            } else {
+                Storage::copy($tmpfile, $dst);
+            }
+        }
+
+        Storage::delete($tmpfile);
 
         return $newfile;
     }
