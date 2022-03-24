@@ -6,6 +6,7 @@ use App\Models\Contact;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
 class ContactsSeeder extends Seeder
 {
@@ -14,10 +15,44 @@ class ContactsSeeder extends Seeder
      *
      * @return void
      */
+
+    public function createAvatarFiles()
+    {
+        $files = Storage::allFiles('seed_avatars/');
+        $targets = [
+            ['path' => 'public/avatars/large/', 'width' => null, 'height' => null],
+            ['path' => 'public/avatars/medium/', 'width' => 100, 'height' => 100],
+            ['path' => 'public/avatars/small/', 'width' => 40, 'height' => 40],
+        ];
+        foreach ($targets as $target) {
+            //delete all files in target directory
+            $tfiles = Storage::allFiles($target['path']);
+            Storage::delete($tfiles);
+            //copy and size new files from seed directory
+            foreach ($files as $file) {
+                $fname = basename($file);
+                $src = 'seed_avatars/' . $fname;
+                $dst = $target['path'] . $fname;
+                //resize new image
+                if ($target['width'] && $target['height']) {
+                    $xsrc = storage_path('app/' . $src);
+                    $xdst = storage_path('app/' . $dst);
+                    $img = Image::make($xsrc);
+                    $img->resize($target['width'], $target['height']);
+                    $img->save($xdst);
+                } else {
+                    Storage::copy($src, $dst);
+                }
+            }
+        }
+    }
+
     public function run()
     {
         $faker = Faker::create();
-        $files = Storage::allFiles('/seed_avatars/');
+        $this->createAvatarFiles();
+
+        $files = Storage::allFiles('public/avatars/large/');
 
         foreach ($files as $file) {
             $fname = basename($file);
@@ -30,31 +65,7 @@ class ContactsSeeder extends Seeder
             $gender = (strpos($fname, 'female') === 0) ? 'female' : 'male';
             $title = str_replace('.', '', $faker->title($gender));
             $firstName = $faker->firstName($gender);
-            while ($lastName = $faker->lastName()) {
-                if ($lastName != 'Morissette') {
-                    break;
-                }
-            }
-
-            if (strpos($fname, 'female_3') === 0) {
-                $title = 'Miss';
-                $firstName = 'Misty';
-                $lastName = 'S.';
-            }
-            if (strpos($fname, 'female_4') === 0) {
-                $title = 'Miss';
-                $firstName = 'Sasha';
-                $lastName = 'S.';
-            }
-
-            $dest = '/public/avatars/' . $fname;
-            if (Storage::exists($dest)) {
-                Storage::delete($dest);
-            }
-
-            if (!Storage::copy('/seed_avatars/' . $fname, $dest)) {
-                continue;
-            }
+            $lastName = $faker->lastName();
 
             Contact::factory()
                 ->hasAddress(1)

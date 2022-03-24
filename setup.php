@@ -61,13 +61,13 @@ output("Setting permissions for bootstrap/cache directory.");
 set_perms($basedir . 'bootstrap/cache', true);
 
 $directories = [
+    $basedir . 'storage/app/seed_avatars',
     $basedir . 'storage/app/public',
-    $basedir . 'storage/app/avatars',
-    $basedir . 'storage/app/avatars/tmp',
-    $basedir . 'storage/app/avatars/seed',
-    $basedir . 'storage/app/avatars/small',
-    $basedir . 'storage/app/avatars/medium',
-    $basedir . 'storage/app/avatars/large',
+    $basedir . 'storage/app/public/avatars',
+    $basedir . 'storage/app/public/avatars/tmp',
+    $basedir . 'storage/app/public/avatars/small',
+    $basedir . 'storage/app/public/avatars/medium',
+    $basedir . 'storage/app/public/avatars/large',
 ];
 
 foreach ($directories as $dir) {
