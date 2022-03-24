@@ -1,5 +1,14 @@
 <?php
 $basedir = rtrim(__DIR__, '/') . '/';
+
+if (is_file($basedir . 'setup.lock')) {
+    output("setup.lock file detected, cannot proceed.", true);
+} else {
+    if (!@file_put_contents($basedir . 'setup.lock', time())) {
+        output("Failed to create setup.lock file, cannot proceed.", true);
+    }
+}
+
 $apacheUser = getenv('APACHE_RUN_USER');
 if (!$apacheUser) {
     $output = exec('apachectl -S 2>/dev/null | grep User');
@@ -29,7 +38,7 @@ function set_perms($dir, $recursive)
 
 function create_and_set($dir)
 {
-    $name = basename($dir);
+    $name = strstr($dir, 'storage/');
     if (!is_dir($dir)) {
         output("$name directory does not exist. Creating...");
         if (@mkdir($dir)) {
@@ -51,9 +60,19 @@ set_perms($basedir . 'storage', true);
 output("Setting permissions for bootstrap/cache directory.");
 set_perms($basedir . 'bootstrap/cache', true);
 
-create_and_set($basedir . 'storage/app/public');
-create_and_set($basedir . 'storage/app/avatars');
-create_and_set($basedir . 'storage/app/tmp_avatars');
+$directories = [
+    $basedir . 'storage/app/public',
+    $basedir . 'storage/app/avatars',
+    $basedir . 'storage/app/avatars/tmp',
+    $basedir . 'storage/app/avatars/seed',
+    $basedir . 'storage/app/avatars/small',
+    $basedir . 'storage/app/avatars/medium',
+    $basedir . 'storage/app/avatars/large',
+];
+
+foreach ($directories as $dir) {
+    create_and_set($dir);
+}
 
 //Symlink from public/storage to storage/app/public
 $link_target = $basedir . 'storage/app/public';

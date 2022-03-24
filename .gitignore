@@ -8,6 +8,7 @@
 /storage/*.key
 /storage/app/public
 /vendor
+setup.lock
 .env
 .env.backup
 .phpunit.result.cache
