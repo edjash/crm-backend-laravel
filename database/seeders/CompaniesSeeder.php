@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Company;
 use Illuminate\Database\Seeder;
 
 class CompaniesSeeder extends Seeder
@@ -13,6 +14,11 @@ class CompaniesSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\Company::factory()->count(15)->hasAddress(1)->create();
+        Company::factory()
+            ->count(20)
+            ->hasAddress(1)
+            ->hasEmailAddress(1)
+            ->hasPhoneNumber(1)
+            ->create();
     }
 }

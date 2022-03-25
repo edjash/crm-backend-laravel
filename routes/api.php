@@ -1,20 +1,16 @@
 <?php
-
-use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\CountriesController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 |
-*/
-
+ */
 
 Route::get('/countries', [CountriesController::class, 'index'])->middleware('auth:sanctum');
+Route::get('/industries', [IndustryController::class, 'index'])->middleware('auth:sanctum');
 
 Route::controller(ContactController::class)->middleware('auth:sanctum')->group(function () {
     Route::get('/contacts', 'index');
@@ -25,6 +21,11 @@ Route::controller(ContactController::class)->middleware('auth:sanctum')->group(f
     Route::delete('/contacts/{deleteIds}', 'delete');
 });
 
-Route::get('/companies', [CompanyController::class, 'index'])->middleware('auth:sanctum');
-Route::post('/companies', [CompanyController::class, 'store'])->middleware('auth:sanctum');
-Route::delete('/companies/{deleteIds}', [CompanyController::class, 'delete'])->middleware('auth:sanctum');
+Route::controller(CompanyController::class)->middleware('auth:sanctum')->group(function () {
+    Route::get('/companies', 'index');
+    Route::post('/companies/avatar', 'uploadAvatar');
+    Route::get('/companies/{id}', 'getCompany');
+    Route::post('/companies/{id}', 'update');
+    Route::post('/companies', 'create');
+    Route::delete('/companies/{deleteIds}', 'delete');
+});

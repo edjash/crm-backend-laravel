@@ -47,14 +47,19 @@ class Contact extends Model
             $fullname = trim($model->firstname . ' ' . $model->lastname);
             $model->fullname = $fullname;
 
+            //avatar was deleted by user
             if (!$model->avatar && $model->getOriginal('avatar')) {
-                Storage::delete('public/avatars/' . $model->getOriginal('avatar'));
+                Storage::delete('public/avatars/large' . $model->getOriginal('avatar'));
+                Storage::delete('public/avatars/medium' . $model->getOriginal('avatar'));
+                Storage::delete('public/avatars/small' . $model->getOriginal('avatar'));
             }
         });
 
         Contact::deleting(function ($model) {
             if ($model->avatar) {
-                Storage::delete('public/avatars/' . $model->avatar);
+                Storage::delete('public/avatars/large' . $model->avatar);
+                Storage::delete('public/avatars/medium' . $model->avatar);
+                Storage::delete('public/avatars/small' . $model->avatar);
             }
         });
     }

@@ -26,6 +26,7 @@ class CompanyFactory extends Factory
 
         return [
             'name' => $name,
+            'industry_id' => rand(1, 20),
         ];
     }
 }

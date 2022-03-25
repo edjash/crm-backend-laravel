@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Company;
 use App\Models\Address;
+use App\Models\Company;
 use Illuminate\Http\Request;
 
 class CompanyController extends Controller
@@ -15,23 +15,28 @@ class CompanyController extends Controller
      */
     public function index(Request $request)
     {
-        return response()->json($this->getCompanies($request));
-    }
-
-    public function getCompanies(Request $request)
-    {
         $term = $request->input('search');
         if (!$term) {
-            return Company::with(['address' => function ($query) {
-                $query->whereNull('contact_id');
-            }])->paginate($request->limit);
+            return Company::with(
+                [
+                    'address' => function ($query) {
+                        $query->whereNull('contact_id');
+                    },
+                    'phoneNumber' => function ($query) {
+                        $query->whereNull('contact_id');
+                    },
+                    'emailAddress' => function ($query) {
+                        $query->whereNull('contact_id');
+                    },
+                ]
+            )->paginate($request->limit);
         } else {
             $builder = Company::with(['address' => function ($query) {
                 $query->whereNull('contact_id');
             }])->where('companies.name', 'LIKE', "%{$term}%")
                 ->orWhereHas('address', function ($query) use ($term) {
                     $query->where([
-                        ['full_address', 'LIKE', "%{$term}%"]
+                        ['full_address', 'LIKE', "%{$term}%"],
                     ])->whereNull('contact_id');
                 });
 
@@ -39,6 +44,28 @@ class CompanyController extends Controller
         }
     }
 
+    public function getCompany(Request $request, $id)
+    {
+        $company = Company::with(
+            [
+                'address.country',
+                'emailAddress',
+                'phoneNumber',
+                'socialMediaUrl',
+            ]
+        )->find($id)->toArray();
+
+        foreach ($company['address'] as $index => $address) {
+            if ($address['country']) {
+                $address['country_code'] = $address['country']['code'];
+                $address['country_name'] = $address['country']['name'];
+            }
+            unset($address['country']);
+            $company['address'][$index] = $address;
+        }
+
+        return response()->json($company);
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -67,7 +94,7 @@ class CompanyController extends Controller
             "town" => $validatedData['town'] ?? "",
             "county" => $validatedData['county'] ?? "",
             "postcode" => $validatedData['postcode'] ?? "",
-            "country_code" => $validatedData['country_code'] ?? ""
+            "country_code" => $validatedData['country_code'] ?? "",
         ];
 
         $address = new Address();
