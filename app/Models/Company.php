@@ -37,14 +37,16 @@ class Company extends Model
         return $this->hasMany(SocialMediaUrl::class);
     }
 
+    public function industry()
+    {
+        return $this->hasOne(Industry::class, 'id', 'industry_id');
+    }
+
     protected static function boot()
     {
         parent::boot();
 
-        Contact::saving(function ($model) {
-            $fullname = trim($model->firstname . ' ' . $model->lastname);
-            $model->fullname = $fullname;
-
+        Company::saving(function ($model) {
             //avatar was deleted by user
             if (!$model->avatar && $model->getOriginal('avatar')) {
                 Storage::delete('public/avatars/large' . $model->getOriginal('avatar'));
@@ -53,7 +55,7 @@ class Company extends Model
             }
         });
 
-        Contact::deleting(function ($model) {
+        Company::deleting(function ($model) {
             if ($model->avatar) {
                 Storage::delete('public/avatars/large' . $model->avatar);
                 Storage::delete('public/avatars/medium' . $model->avatar);

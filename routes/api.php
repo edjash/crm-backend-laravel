@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\CountriesController;
+use App\Http\Controllers\IndustryController;
 use Illuminate\Support\Facades\Route;
 
 /*

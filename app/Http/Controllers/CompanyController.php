@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Address;
+use App\Http\Traits\ArrayFieldsTrait;
+use App\Http\Traits\AvatarTrait;
 use App\Models\Company;
+use App\Models\SocialMediaUrl;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class CompanyController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    use AvatarTrait, ArrayFieldsTrait;
+
     public function index(Request $request)
     {
         $term = $request->input('search');
@@ -52,6 +52,7 @@ class CompanyController extends Controller
                 'emailAddress',
                 'phoneNumber',
                 'socialMediaUrl',
+                'industry',
             ]
         )->find($id)->toArray();
 
@@ -66,67 +67,95 @@ class CompanyController extends Controller
 
         return response()->json($company);
     }
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+
+    public function create(Request $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'street' => 'string|max:255',
-            'town' => 'string|max:255',
-            'county' => 'string|max:255',
-            'postcode' => 'string|max:255',
-            'country_code' => 'string|max:255',
+        $validatedData = $this->validateData($request);
+
+        $model = Company::create([
+            'name' => $validatedData['name'] ?? "",
+            'industry_id' => $validatedData['industry'] ?? null,
+            'avatar' => $this->saveAvatar($validatedData['avatar'] ?? ''),
         ]);
 
-        $company = Company::create([
-            'name' => $validatedData['name'],
+        $this->arrayFieldsUpsert('company_id', $model->id, [
+            'Address' => $validatedData['address'] ?? [],
+            'EmailAddress' => $validatedData['email_address'] ?? [],
+            'PhoneNumber' => $validatedData['phone_number'] ?? [],
         ]);
+        $this->saveSocialMedia($validatedData['socialmedia'] ?? [], $model->id);
 
-        $addr = [
-            "type" => "main",
-            "company_id" => $company->id,
-            "street" => $validatedData['street'] ?? "",
-            "town" => $validatedData['town'] ?? "",
-            "county" => $validatedData['county'] ?? "",
-            "postcode" => $validatedData['postcode'] ?? "",
-            "country_code" => $validatedData['country_code'] ?? "",
-        ];
-
-        $address = new Address();
-        $address->fill($addr);
-        $address->save();
-
-        return response()->json(["company" => $company]);
+        return response()->json(["company" => $model]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Company  $Company
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Company $Company)
+    public function update(Request $request, int $id)
     {
-        //
+        $validatedData = $this->validateData($request);
+        $validatedData['avatar'] = $this->saveAvatar($validatedData['avatar'] ?? '');
+        $validatedData['industry_id'] = $validatedData['industry'] ?? null;
+        $model = Company::find($id);
+        $model->fill($validatedData);
+        $model->save();
+
+        $this->arrayFieldsDelete([
+            'Address' => $validatedData['address_deleted'] ?? [],
+            'EmailAddress' => $validatedData['email_address_deleted'] ?? [],
+            'PhoneNumber' => $validatedData['phone_number_deleted'] ?? [],
+        ]);
+        $this->arrayFieldsUpsert('company_id', $id, [
+            'Address' => $validatedData['address'] ?? [],
+            'EmailAddress' => $validatedData['email_address'] ?? [],
+            'PhoneNumber' => $validatedData['phone_number'] ?? [],
+        ]);
+        $this->saveSocialMedia($validatedData['socialmedia'] ?? [], $model->id);
+
+        return response()->json(["company" => $model]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Company  $Company
-     * @return \Illuminate\Http\Response
-     */
     public function delete(Request $request, $ids)
     {
         $ids = array_map('intval', explode(",", $ids));
         Company::destroy($ids);
 
-        return $this->getCompanies($request);
+        return $this->index($request);
+    }
+    //Utility functions
+    private function validateData(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'avatar' => 'max:255',
+            'name' => 'required|max:255',
+            'industry' => 'numeric|nullable',
+            'address.*.id' => 'numeric|nullable',
+            'address.*.label' => 'max:255',
+            'address.*.street' => 'max:255',
+            'address.*.town' => 'max:255',
+            'address.*.county' => 'max:255',
+            'address.*.postcode' => 'max:255',
+            'address.*.country' => 'max:3',
+            'address_deleted' => 'array|nullable',
+            'email_address.*.id' => 'numeric|nullable',
+            'email_address.*.label' => 'max:255',
+            'email_address.*.address' => 'max:255',
+            'email_address_deleted' => 'array|nullable',
+            'phone_number.*.id' => 'numeric|nullable',
+            'phone_number.*.label' => 'max:255',
+            'phone_number.*.number' => 'max:255',
+            'phone_number_deleted' => 'array|nullable',
+            'socialmedia.*' => 'string|nullable|max:255',
+        ])->validate();
+    }
+
+    private function saveSocialMedia($data, $company_id)
+    {
+        foreach ($data as $ident => $url) {
+            if (!in_array($ident, ['facebook', 'instagram', 'twitter', 'linkedin'])) {
+                continue;
+            }
+            SocialMediaUrl::updateOrCreate(
+                ["company_id" => $company_id, "ident" => $ident],
+                ["ident" => $ident, "url" => $url]
+            );
+        }
     }
 }
