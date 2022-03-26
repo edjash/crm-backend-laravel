@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Traits\ArrayFieldsTrait;
+use App\Http\Traits\AvatarTrait;
 use App\Models\Contact;
 use App\Models\SocialMediaUrl;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Intervention\Image\Facades\Image;
 
 class ContactController extends Controller
 {
+    use AvatarTrait, ArrayFieldsTrait;
+
     public function index(Request $request)
     {
         $term = $request->input('search');
@@ -70,38 +71,44 @@ class ContactController extends Controller
     {
         $validatedData = $this->validateData($request);
 
-        $contact = Contact::create([
+        $model = Contact::create([
             'title' => $validatedData['title'] ?? '',
             'pronouns' => $validatedData['pronouns'] ?? '',
             'firstname' => $validatedData['firstname'] ?? "",
             'lastname' => $validatedData['lastname'] ?? "",
-            'avatar' => $this->saveFinalAvatar($validatedData['avatar'] ?? ''),
+            'avatar' => $this->saveAvatar($validatedData['avatar'] ?? ''),
         ]);
 
-        $this->insertUpdateArrayItems('Address', $validatedData['address'] ?? [], $contact->id);
-        $this->insertUpdateArrayItems('EmailAddress', $validatedData['email_address'] ?? [], $contact->id);
-        $this->insertUpdateArrayItems('PhoneNumber', $validatedData['phone_number'] ?? [], $contact->id);
-        $this->saveSocialMedia($validatedData['socialmedia'] ?? [], $contact->id);
+        $this->arrayFieldsUpsert('company_id', $model->id, [
+            'Address' => $validatedData['address'] ?? [],
+            'EmailAddress' => $validatedData['email_address'] ?? [],
+            'PhoneNumber' => $validatedData['phone_number'] ?? [],
+        ]);
+        $this->saveSocialMedia($validatedData['socialmedia'] ?? [], $model->id);
 
-        return response()->json(["contact" => $contact]);
+        return response()->json(["company" => $model]);
     }
 
     public function update(Request $request, int $id)
     {
         $validatedData = $this->validateData($request);
-        $validatedData['avatar'] = $this->saveFinalAvatar($validatedData['avatar'] ?? '');
-        $contact = Contact::find($id);
-        $contact->fill($validatedData);
-        $contact->save();
-        $this->deleteArrayItems('Address', $validatedData['address_deleted'] ?? []);
-        $this->deleteArrayItems('EmailAddress', $validatedData['email_address_deleted'] ?? []);
-        $this->deleteArrayItems('PhoneNumber', $validatedData['phone_number_deleted'] ?? []);
-        $this->insertUpdateArrayItems('Address', $validatedData['address'] ?? [], $contact->id);
-        $this->insertUpdateArrayItems('EmailAddress', $validatedData['email_address'] ?? [], $contact->id);
-        $this->insertUpdateArrayItems('PhoneNumber', $validatedData['phone_number'] ?? [], $contact->id);
-        $this->saveSocialMedia($validatedData['socialmedia'] ?? [], $contact->id);
+        $validatedData['avatar'] = $this->saveAvatar($validatedData['avatar'] ?? '');
+        $model = Contact::find($id);
+        $model->fill($validatedData);
+        $model->save();
+        $this->arrayFieldsDelete([
+            'Address' => $validatedData['address_deleted'] ?? [],
+            'EmailAddress' => $validatedData['email_address_deleted'] ?? [],
+            'PhoneNumber' => $validatedData['phone_number_deleted'] ?? [],
+        ]);
+        $this->arrayFieldsUpsert('company_id', $id, [
+            'Address' => $validatedData['address'] ?? [],
+            'EmailAddress' => $validatedData['email_address'] ?? [],
+            'PhoneNumber' => $validatedData['phone_number'] ?? [],
+        ]);
+        $this->saveSocialMedia($validatedData['socialmedia'] ?? [], $model->id);
 
-        return response()->json(["contact" => $contact]);
+        return response()->json(["company" => $model]);
     }
 
     public function delete(Request $request, $ids)
@@ -110,25 +117,6 @@ class ContactController extends Controller
         Contact::destroy($ids);
 
         return $this->index($request);
-    }
-
-    public function uploadAvatar(Request $request)
-    {
-        if (!is_writable(storage_path('app/public/avatars/tmp'))) {
-            return response()->json([
-                "error" => "No filesystem permission to store temporary avatar.",
-            ], 500);
-        }
-
-        Validator::make($request->file(), [
-            'avatar' => 'mimes:jpeg,jpg,png,gif|max:10000',
-        ])->validate();
-
-        $file = $request->file('avatar');
-        $hashName = 'tmp_' . $file->hashName();
-        $path = $file->storePubliclyAs('public/avatars/tmp', $hashName);
-
-        return response()->json(["filename" => basename($path)]);
     }
 
     //Utility functions
@@ -160,63 +148,6 @@ class ContactController extends Controller
         ])->validate();
     }
 
-    private function deleteArrayItems($modelName, array $list)
-    {
-        $model = "App\\Models\\$modelName";
-        $list = array_unique($list);
-
-        if (!count($list)) {
-            return;
-        }
-
-        foreach ($list as $id) {
-            $id = intval(trim($id));
-            if ($id) {
-                $model::destroy($id);
-            }
-        }
-    }
-
-    private function insertUpdateArrayItems($modelName, array $list, $contact_id)
-    {
-        $model = "App\\Models\\$modelName";
-
-        if (!count($list)) {
-            return;
-        }
-
-        foreach ($list as $index => $data) {
-
-            $data["contact_id"] = $contact_id;
-            $data["display_index"] = $index;
-
-            if (!($data['id'] ?? false)) {
-                if (!$model::isEmpty($data)) {
-                    $model::create($data);
-                }
-                continue;
-            }
-
-            $id = intval($data['id']);
-            unset($data['id']);
-
-            $instance = $model::find($id);
-
-            if (!$instance || $instance->contact_id != $contact_id) {
-                continue;
-            }
-
-            if ($model::isEmpty($data)) {
-                $model::destroy($id);
-                continue;
-            }
-
-            $instance->fill($data);
-            $instance->save();
-            continue;
-        }
-    }
-
     private function saveSocialMedia($data, $contact_id)
     {
         foreach ($data as $ident => $url) {
@@ -228,48 +159,5 @@ class ContactController extends Controller
                 ["ident" => $ident, "url" => $url]
             );
         }
-    }
-
-    private function saveFinalAvatar($file): string
-    {
-        if (!$file || (substr($file, 0, 4) !== 'tmp_')) {
-            return $file;
-        }
-
-        if (!is_writable(storage_path('app/public/avatars'))) {
-            Log::error(storage_path('app/public/avatars') . ' is not writeable');
-            return '';
-        }
-
-        $tmpfile = 'public/avatars/tmp/' . $file;
-        $newfile = str_replace('tmp_', '', $file);
-        if (!Storage::exists($tmpfile)) {
-            return '';
-        }
-
-        $targets = [
-            ['path' => 'public/avatars/large/', 'width' => 500, 'height' => 500],
-            ['path' => 'public/avatars/medium/', 'width' => 100, 'height' => 100],
-            ['path' => 'public/avatars/small/', 'width' => 40, 'height' => 40],
-        ];
-
-        foreach ($targets as $target) {
-            $fname = basename($newfile);
-            $dst = $target['path'] . $fname;
-            //resize new image
-            if ($target['width'] && $target['height']) {
-                $xsrc = storage_path('app/' . $tmpfile);
-                $xdst = storage_path('app/' . $dst);
-                $img = Image::make($xsrc);
-                $img->resize($target['width'], $target['height']);
-                $img->save($xdst);
-            } else {
-                Storage::copy($tmpfile, $dst);
-            }
-        }
-
-        Storage::delete($tmpfile);
-
-        return $newfile;
     }
 }
