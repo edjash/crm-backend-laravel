@@ -16,6 +16,7 @@ class Contact extends Model
         'firstname',
         'lastname',
         'fullname',
+        'nickname',
         'avatar',
     ];
 

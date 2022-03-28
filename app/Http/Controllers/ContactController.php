@@ -101,7 +101,7 @@ class ContactController extends Controller
             'EmailAddress' => $validatedData['email_address_deleted'] ?? [],
             'PhoneNumber' => $validatedData['phone_number_deleted'] ?? [],
         ]);
-        $this->arrayFieldsUpsert('company_id', $id, [
+        $this->arrayFieldsUpsert('contact_id', $id, [
             'Address' => $validatedData['address'] ?? [],
             'EmailAddress' => $validatedData['email_address'] ?? [],
             'PhoneNumber' => $validatedData['phone_number'] ?? [],
@@ -128,6 +128,7 @@ class ContactController extends Controller
             'pronouns' => 'max:255',
             'firstname' => 'required|max:255',
             'lastname' => 'max:255',
+            'nickname' => 'max:255',
             'address.*.id' => 'numeric|nullable',
             'address.*.label' => 'max:255',
             'address.*.street' => 'max:255',

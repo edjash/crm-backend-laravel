@@ -32,7 +32,7 @@ trait ArrayFieldsTrait
                 }
 
                 $instance = $model::find($id);
-                if (!$instance || $instance->$recordIdField != $recordId) {
+                if (!$instance || $instance->{$recordIdField} != $recordId) {
                     continue;
                 }
 

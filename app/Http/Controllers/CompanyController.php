@@ -125,7 +125,7 @@ class CompanyController extends Controller
         return Validator::make($request->all(), [
             'avatar' => 'max:255',
             'name' => 'required|max:255',
-            'industry' => 'numeric|nullable',
+            'industry_id' => 'max:11',
             'address.*.id' => 'numeric|nullable',
             'address.*.label' => 'max:255',
             'address.*.street' => 'max:255',
