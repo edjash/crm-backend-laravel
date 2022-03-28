@@ -20,7 +20,8 @@ class CreateCompaniesTable extends Migration
                 ->nullable()
                 ->constrained('industries')
                 ->onDelete('set null');
-            $table->text('avatar', 255)->nullable();
+            $table->string('avatar', 255)->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

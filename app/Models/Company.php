@@ -16,6 +16,7 @@ class Company extends Model
         'name',
         'avatar',
         'industry_id',
+        'description',
     ];
 
     public function address()
