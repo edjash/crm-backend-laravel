@@ -16,6 +16,8 @@ class CompanyController extends Controller
     public function index(Request $request)
     {
         $term = $request->input('search');
+        $searchType = $request->input('search', 'any');
+
         if (!$term) {
             return Company::with(
                 [
@@ -31,15 +33,15 @@ class CompanyController extends Controller
                 ]
             )->paginate($request->limit);
         } else {
+            $search = ($searchType === 'any') ? "%{$term}%" : "{$term}%";
             $builder = Company::with(['address' => function ($query) {
                 $query->whereNull('contact_id');
-            }])->where('companies.name', 'LIKE', "%{$term}%")
-                ->orWhereHas('address', function ($query) use ($term) {
-                    $query->where([
-                        ['full_address', 'LIKE', "%{$term}%"],
-                    ])->whereNull('contact_id');
+            }])->where('companies.name', 'LIKE', $search);
+            if ($searchType === 'any') {
+                $builder->orWhereHas('address', function ($query) use ($term, $search) {
+                    $query->where([['full_address', 'LIKE', $search]])->whereNull('contact_id');
                 });
-
+            }
             return $builder->paginate($request->limit);
         }
     }

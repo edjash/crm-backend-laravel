@@ -21,6 +21,10 @@ class CreateContactsTable extends Migration
             $table->string('nickname', 255)->nullable();
             $table->string('fullname', 255)->nullable();
             $table->string('pronouns', 255)->nullable();
+            $table->foreignId('company_id')
+                ->nullable()
+                ->constrained('companies')
+                ->onDelete('set null');
             $table->string('avatar', 255)->nullable();
             $table->timestamps();
         });

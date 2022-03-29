@@ -52,6 +52,7 @@ class ContactController extends Controller
                 'emailAddress',
                 'phoneNumber',
                 'socialMediaUrl',
+                'company'
             ]
         )->find($id)->toArray();
 
@@ -76,6 +77,7 @@ class ContactController extends Controller
             'pronouns' => $validatedData['pronouns'] ?? '',
             'firstname' => $validatedData['firstname'] ?? "",
             'lastname' => $validatedData['lastname'] ?? "",
+            'company_id' => $validatedData['company'] ?? null,
             'avatar' => $this->saveAvatar($validatedData['avatar'] ?? ''),
         ]);
 
@@ -93,6 +95,7 @@ class ContactController extends Controller
     {
         $validatedData = $this->validateData($request);
         $validatedData['avatar'] = $this->saveAvatar($validatedData['avatar'] ?? '');
+        $validatedData['company_id'] = $validatedData['company'] ?? null;
         $model = Contact::find($id);
         $model->fill($validatedData);
         $model->save();
@@ -129,6 +132,7 @@ class ContactController extends Controller
             'firstname' => 'required|max:255',
             'lastname' => 'max:255',
             'nickname' => 'max:255',
+            'company' => 'max:11|nullable',
             'address.*.id' => 'numeric|nullable',
             'address.*.label' => 'max:255',
             'address.*.street' => 'max:255',

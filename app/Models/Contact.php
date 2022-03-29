@@ -18,11 +18,17 @@ class Contact extends Model
         'fullname',
         'nickname',
         'avatar',
+        'company_id',
     ];
 
     public function address()
     {
         return $this->hasMany(Address::class);
+    }
+
+    public function company()
+    {
+        return $this->hasOne(Company::class, 'id', 'company_id');
     }
 
     public function emailAddress()
