@@ -128,7 +128,7 @@ class CompanyController extends Controller
             'avatar' => 'max:255',
             'name' => 'required|max:255',
             'industry' => 'max:11',
-            'description' => 'string',
+            'description' => 'string|nullable',
             'address.*.id' => 'numeric|nullable',
             'address.*.label' => 'max:255',
             'address.*.street' => 'max:255',
