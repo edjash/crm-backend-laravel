@@ -63,6 +63,8 @@ set_perms($basedir . 'bootstrap/cache', true);
 $directories = [
     $basedir . 'storage/app/seed_avatars',
     $basedir . 'storage/app/public',
+    $basedir . 'storage/app/public/socialmedia',
+    $basedir . 'storage/app/public/socialmedia/24x24',
     $basedir . 'storage/app/public/avatars',
     $basedir . 'storage/app/public/avatars/tmp',
     $basedir . 'storage/app/public/avatars/small',
