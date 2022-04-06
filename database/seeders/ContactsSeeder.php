@@ -53,6 +53,7 @@ class ContactsSeeder extends Seeder
         $this->createAvatarFiles();
 
         $files = Storage::allFiles('public/avatars/large/');
+        shuffle($files);
 
         foreach ($files as $file) {
             $fname = basename($file);
