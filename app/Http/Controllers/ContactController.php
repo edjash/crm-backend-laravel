@@ -8,6 +8,7 @@ use App\Models\Contact;
 use App\Models\SocialMediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class ContactController extends Controller
 {
@@ -15,33 +16,33 @@ class ContactController extends Controller
 
     public function index(Request $request)
     {
-        $term = $request->input('search');
-        if (!$term) {
-            return Contact::with(
-                [
-                    'address' => function ($query) {
-                        $query->whereNull('company_id');
-                    },
-                    'phoneNumber' => function ($query) {
-                        $query->whereNull('company_id');
-                    },
-                    'emailAddress' => function ($query) {
-                        $query->whereNull('company_id');
-                    },
-                ]
-            )->paginate($request->limit);
-        } else {
-            $builder = Contact::with(['address' => function ($query) {
-                $query->whereNull('company_id');
-            }])->where('contacts.fullname', 'LIKE', "%{$term}%")
-                ->orWhereHas('address', function ($query) use ($term) {
+        $fields = explode(",", $request->input('fields'));
+        $search = $request->input('search');
+
+        $contacts = Contact::query();
+
+        $relations = ["address", "phone_number", "email_address"];
+        foreach ($relations as $field) {
+            if (in_array($field, $fields)) {
+                $contacts->with([Str::camel($field) => function ($query) {
+                    $query->whereNull('company_id');
+                }]);
+            }
+        }
+
+        if ($search) {
+            $contacts->where('contacts.fullname', 'LIKE', "%{$search}%");
+
+            if (in_array('address', $fields)) {
+                $contacts->orWhereHas('address', function ($query) use ($search) {
                     $query->where([
-                        ['full_address', 'LIKE', "%{$term}%"],
+                        ['full_address', 'LIKE', "%{$search}%"],
                     ])->whereNull('company_id');
                 });
-
-            return $builder->paginate($request->limit);
+            }
         }
+
+        return $contacts->paginate($request->limit);
     }
 
     public function getContact(Request $request, $id)
@@ -52,7 +53,7 @@ class ContactController extends Controller
                 'emailAddress',
                 'phoneNumber',
                 'socialMediaUrl',
-                'company'
+                'company',
             ]
         )->find($id)->toArray();
 
