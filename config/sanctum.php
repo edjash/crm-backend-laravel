@@ -15,7 +15,7 @@ return [
 
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
         '%s%s',
-        'crmdemo.localhost:9000,crmdemo.co.uk',
+        'crmdemo.test:9000,crmdemo.co.uk',
         env('APP_URL') ? ',' . parse_url(env('APP_URL'), PHP_URL_HOST) : ''
     ))),
 

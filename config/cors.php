@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*://crmdemo.localhost:*', '*://192.168.*:*', '*://crmdemo.co.uk'],
+    'allowed_origins' => ['*://crmdemo.test:*', '*://192.168.*:*', '*://crmdemo.co.uk'],
 
     'allowed_origins_patterns' => [],
 
