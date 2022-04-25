@@ -77,7 +77,7 @@ class CompanyController extends Controller
         $model = Company::create([
             'name' => $validatedData['name'] ?? "",
             'industry_id' => $validatedData['industry'] ?? null,
-            'avatar' => $this->saveAvatar($validatedData['avatar'] ?? ''),
+            'avatar' => $this->savePermAvatar($validatedData['avatar'] ?? ''),
         ]);
 
         $this->arrayFieldsUpsert('company_id', $model->id, [
@@ -93,7 +93,7 @@ class CompanyController extends Controller
     public function update(Request $request, int $id)
     {
         $validatedData = $this->validateData($request);
-        $validatedData['avatar'] = $this->saveAvatar($validatedData['avatar'] ?? '');
+        $validatedData['avatar'] = $this->savePermAvatar($validatedData['avatar'] ?? '');
         $validatedData['industry_id'] = $validatedData['industry'] ?? null;
         $model = Company::find($id);
         $model->fill($validatedData);
