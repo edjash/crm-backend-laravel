@@ -37,14 +37,25 @@ class AvatarsClean extends Command
      */
     private function cleanTmpAvatars()
     {
+        $paths = [
+            'app/public/avatars/large/',
+            'app/public/avatars/medium/',
+            'app/public/avatars/small/',
+            'app/public/avatars/tmp/',
+        ];
+
         $files = Storage::files('public/avatars/tmp');
-        $path = storage_path('app');
         $yesterday = strtotime("-1 day");
 
-        foreach ($files as $file) {
-            $fname = $path . '/' . $file;
-            if (filectime($fname) > $yesterday) {
-                Storage::delete($file);
+        foreach ($files as $fname) {
+            if (strpos($fname, 'tmp_') !== 0) {
+                continue;
+            }
+            foreach ($paths as $path) {
+                $file = storage_path($path . $fname);
+                if (filectime($file) > $yesterday) {
+                    Storage::delete($file);
+                }
             }
         }
     }

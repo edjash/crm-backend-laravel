@@ -79,7 +79,7 @@ class ContactController extends Controller
             'firstname' => $validatedData['firstname'] ?? "",
             'lastname' => $validatedData['lastname'] ?? "",
             'company_id' => $validatedData['company'] ?? null,
-            'avatar' => $this->saveAvatar($validatedData['avatar'] ?? ''),
+            'avatar' => $this->savePermAvatar($validatedData['avatar'] ?? ''),
         ]);
 
         $this->arrayFieldsUpsert('company_id', $model->id, [
@@ -95,7 +95,7 @@ class ContactController extends Controller
     public function update(Request $request, int $id)
     {
         $validatedData = $this->validateData($request);
-        $validatedData['avatar'] = $this->saveAvatar($validatedData['avatar'] ?? '');
+        $validatedData['avatar'] = $this->savePermAvatar($validatedData['avatar'] ?? '');
         $validatedData['company_id'] = $validatedData['company'] ?? null;
         $model = Contact::find($id);
         $model->fill($validatedData);

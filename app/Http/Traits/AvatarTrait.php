@@ -22,52 +22,66 @@ trait AvatarTrait
         ])->validate();
 
         $file = $request->file('avatar');
-        $hashName = 'tmp_' . $file->hashName();
-        $path = $file->storePubliclyAs('public/avatars/tmp', $hashName);
-
-        return response()->json(["filename" => basename($path)]);
+        $tmpname = $this->saveTmpAvatar($file);
+        return response()->json(["filename" => $tmpname]);
     }
 
-    public function saveAvatar($file): string
+    public function saveTmpAvatar($file): string
     {
-        if (!$file || (substr($file, 0, 4) !== 'tmp_')) {
-            return $file;
-        }
-
         if (!is_writable(storage_path('app/public/avatars'))) {
             Log::error(storage_path('app/public/avatars') . ' is not writeable');
             return '';
         }
+        if (!is_writable(storage_path('app/public/avatars/tmp'))) {
+            Log::error(storage_path('app/public/avatars/tmp') . ' is not writeable');
+            return '';
+        }
 
-        $tmpfile = 'public/avatars/tmp/' . $file;
-        $newfile = str_replace('tmp_', '', $file);
-        if (!Storage::exists($tmpfile)) {
+        $tmpname = 'tmp_' . $file->hashName();
+        if (!$file->storePubliclyAs('public/avatars/tmp', $tmpname)) {
             return '';
         }
 
         $targets = [
-            ['path' => 'public/avatars/large/', 'width' => 500, 'height' => 500],
-            ['path' => 'public/avatars/medium/', 'width' => 100, 'height' => 100],
-            ['path' => 'public/avatars/small/', 'width' => 40, 'height' => 40],
+            ['path' => 'app/public/avatars/large/', 'width' => 500, 'height' => 500],
+            ['path' => 'app/public/avatars/medium/', 'width' => 100, 'height' => 100],
+            ['path' => 'app/public/avatars/small/', 'width' => 40, 'height' => 40],
         ];
 
         foreach ($targets as $target) {
-            $fname = basename($newfile);
-            $dst = $target['path'] . $fname;
             //resize new image
-            if ($target['width'] && $target['height']) {
-                $xsrc = storage_path('app/' . $tmpfile);
-                $xdst = storage_path('app/' . $dst);
-                $img = Image::make($xsrc);
-                $img->resize($target['width'], $target['height']);
-                $img->save($xdst);
-            } else {
-                Storage::copy($tmpfile, $dst);
+            $src = storage_path('app/public/avatars/tmp/' . $tmpname);
+            $img = Image::make($src);
+            $img->resize($target['width'], $target['height']);
+            $img->save(storage_path($target['path'] . $tmpname));
+        }
+
+        return $tmpname;
+    }
+
+    public function savePermAvatar($tmpname): string
+    {
+        if (!$tmpname || strpos($tmpname, 'tmp_') !== 0) {
+            return '';
+        }
+
+        $paths = [
+            'public/avatars/large/',
+            'public/avatars/medium/',
+            'public/avatars/small/',
+        ];
+
+        $fname = str_replace('tmp_', '', $tmpname);
+        foreach ($paths as $path) {
+            $src = $path . $tmpname;
+            $dst = $path . $fname;
+            if (!Storage::move($src, $dst)) {
+                return '';
             }
         }
 
-        Storage::delete($tmpfile);
+        Storage::delete(storage_path('app/public/avatars/tmp' . $tmpname));
 
-        return $newfile;
+        return $fname;
     }
 }
