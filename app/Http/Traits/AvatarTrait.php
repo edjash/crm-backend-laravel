@@ -62,7 +62,7 @@ trait AvatarTrait
     public function savePermAvatar($tmpname): string
     {
         if (!$tmpname || strpos($tmpname, 'tmp_') !== 0) {
-            return '';
+            return $tmpname;
         }
 
         $paths = [
