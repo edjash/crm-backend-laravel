@@ -59,7 +59,7 @@ class ContactsSeeder extends Seeder
         $faker = Faker::create();
         $this->createAvatarFiles();
 
-        $files = Storage::allFiles('app/public/avatars/large/');
+        $files = Storage::allFiles('public/avatars/large/');
         shuffle($files);
 
         foreach ($files as $file) {
