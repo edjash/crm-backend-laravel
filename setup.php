@@ -1,6 +1,10 @@
 <?php
 $basedir = rtrim(__DIR__, '/') . '/';
+$config = require $basedir . 'config/crm.php';
 
+if (!is_array($config['avatars'])) {
+    output("Config file config/crm.php is not valid.", true);
+}
 if (is_file($basedir . 'setup.lock')) {
     output("setup.lock file detected, cannot proceed.", true);
 } else {
@@ -65,12 +69,12 @@ $directories = [
     $basedir . 'storage/app/public',
     $basedir . 'storage/app/public/socialmedia',
     $basedir . 'storage/app/public/socialmedia/24x24',
-    $basedir . 'storage/app/public/avatars',
-    $basedir . 'storage/app/public/avatars/tmp',
-    $basedir . 'storage/app/public/avatars/small',
-    $basedir . 'storage/app/public/avatars/medium',
-    $basedir . 'storage/app/public/avatars/large',
 ];
+
+//avatar directories
+foreach ($config['avatars'] as $name => $target) {
+    $directories[] = $basedir . 'storage/app' . $target['dir'];
+}
 
 foreach ($directories as $dir) {
     create_and_set($dir);

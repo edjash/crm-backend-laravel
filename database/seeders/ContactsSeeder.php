@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Contact;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 
@@ -18,21 +19,27 @@ class ContactsSeeder extends Seeder
 
     public function createAvatarFiles()
     {
+        $avatarCfg = Config::get('crm.avatars');
         $files = Storage::allFiles('seed_avatars/');
-        $targets = [
-            ['path' => 'public/avatars/large/', 'width' => null, 'height' => null],
-            ['path' => 'public/avatars/medium/', 'width' => 100, 'height' => 100],
-            ['path' => 'public/avatars/small/', 'width' => 40, 'height' => 40],
-        ];
-        foreach ($targets as $target) {
+
+        foreach ($avatarCfg as $name => $target) {
+            $path = storage_path('app/' . trim($target['dir'], '/'));
+            if (!is_dir($path) || !is_writable($path)) {
+                $this->command->line("Error: Path '$path' does not exist or is not writable.");
+                exit;
+            }
+
+            if ($name === 'tmp') {
+                continue;
+            }
             //delete all files in target directory
-            $tfiles = Storage::allFiles($target['path']);
+            $tfiles = Storage::allFiles($target['dir']);
             Storage::delete($tfiles);
             //copy and size new files from seed directory
             foreach ($files as $file) {
                 $fname = basename($file);
                 $src = 'seed_avatars/' . $fname;
-                $dst = $target['path'] . $fname;
+                $dst = rtrim($target['dir'], '/') . '/' . $fname;
                 //resize new image
                 if ($target['width'] && $target['height']) {
                     $xsrc = storage_path('app/' . $src);
@@ -52,7 +59,7 @@ class ContactsSeeder extends Seeder
         $faker = Faker::create();
         $this->createAvatarFiles();
 
-        $files = Storage::allFiles('public/avatars/large/');
+        $files = Storage::allFiles('app/public/avatars/large/');
         shuffle($files);
 
         foreach ($files as $file) {
