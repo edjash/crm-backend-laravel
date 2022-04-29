@@ -135,7 +135,7 @@ class ContactController extends Controller
             'nickname' => 'max:255',
             'company' => 'max:11|nullable',
             'address.*.id' => 'numeric|nullable',
-            'address.*.label' => 'max:255',
+            'address.*.label' => 'string|max:255',
             'address.*.street' => 'max:255',
             'address.*.town' => 'max:255',
             'address.*.county' => 'max:255',
