@@ -76,7 +76,7 @@ class CompanyController extends Controller
 
         $model = Company::create([
             'name' => $validatedData['name'] ?? "",
-            'industry_id' => $validatedData['industry'] ?? null,
+            'industry_id' => $validatedData['industry_id'] ?? null,
             'avatar' => $this->savePermAvatar($validatedData['avatar'] ?? ''),
         ]);
 
@@ -94,7 +94,6 @@ class CompanyController extends Controller
     {
         $validatedData = $this->validateData($request);
         $validatedData['avatar'] = $this->savePermAvatar($validatedData['avatar'] ?? '');
-        $validatedData['industry_id'] = $validatedData['industry'] ?? null;
         $model = Company::find($id);
         $model->fill($validatedData);
         $model->save();
@@ -127,7 +126,7 @@ class CompanyController extends Controller
         return Validator::make($request->all(), [
             'avatar' => 'max:255',
             'name' => 'required|max:255',
-            'industry' => 'max:11',
+            'industry_id' => 'numeric|nullable',
             'description' => 'string|nullable',
             'address.*.id' => 'numeric|nullable',
             'address.*.label' => 'max:255',
