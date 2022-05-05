@@ -1,8 +1,13 @@
 <?php
 
 return [
+
+    'avatarFiles' => [
+        'maxBytes' => 4000,
+        'types' => ['jpg', 'jpeg', 'gif', 'png'],
+    ],
     /**
-     *  Directories and sizes for Avatar files.
+     *  Directories and dimensions for Avatar files.
      *  The 'dir' value is relative to the /storage/app folder,
      *  and should have a trailing and leading slash.
      **/

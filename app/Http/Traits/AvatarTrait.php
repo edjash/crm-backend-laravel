@@ -2,6 +2,7 @@
 namespace App\Http\Traits;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -11,14 +12,19 @@ trait AvatarTrait
 {
     public function uploadAvatar(Request $request)
     {
+
         if (!is_writable(storage_path('app/public/avatars/tmp'))) {
             return response()->json([
                 "error" => "No filesystem permission to store temporary avatar.",
             ], 500);
         }
 
+        $filesCfg = Config::get('crm.avatarFiles');
+        $types = implode(",", $filesCfg['types']);
+        $bytes = $filesCfg['maxBytes'];
+
         Validator::make($request->file(), [
-            'avatar' => 'mimes:jpeg,jpg,png,gif|max:10000',
+            'avatar' => 'mimes:' . $types . '|max:' . $bytes,
         ])->validate();
 
         $file = $request->file('avatar');
