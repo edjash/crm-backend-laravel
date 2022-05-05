@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Password;
 use App\Mail\Registered;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -27,9 +26,7 @@ class AuthController extends Controller
 
         Mail::to($user)->send(new Registered($user));
 
-        return response()->json([
-            "user" => $user,
-        ]);
+        return $this->sendAppInit($user);
     }
 
     public function login(Request $request)
@@ -43,7 +40,7 @@ class AuthController extends Controller
             $errors = ['The login details were not recognised.'];
 
             return response()->json([
-                'errors' => ['auth' => $errors]
+                'errors' => ['auth' => $errors],
             ], 401);
         }
 
@@ -51,8 +48,16 @@ class AuthController extends Controller
 
         $user = User::where('email', $validatedData['email'])->firstOrFail();
 
+        return $this->sendAppInit($user);
+    }
+
+    public function sendAppInit($user)
+    {
+        $serverCfg = Config::get('crm');
+
         return response()->json([
             "user" => $user,
+            "server" => $serverCfg,
         ]);
     }
 }
