@@ -56,8 +56,8 @@ class AuthController extends Controller
         $serverCfg = Config::get('crm');
 
         return response()->json([
-            "user" => $user,
-            "server" => $serverCfg,
+            "userInfo" => $user,
+            "serverCfg" => $serverCfg,
         ]);
     }
 }

@@ -3,7 +3,7 @@
 return [
 
     'avatarFiles' => [
-        'maxBytes' => 4000,
+        'maxBytes' => 2000000,
         'types' => ['jpg', 'jpeg', 'gif', 'png'],
     ],
     /**
