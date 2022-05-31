@@ -66,6 +66,7 @@ set_perms($basedir . 'bootstrap/cache', true);
 
 $directories = [
     $basedir . 'storage/app/seed_avatars',
+    $basedir . 'storage/app/socialmedia',
     $basedir . 'storage/app/public',
     $basedir . 'storage/app/public/socialmedia',
     $basedir . 'storage/app/public/socialmedia/24x24',
@@ -79,6 +80,11 @@ foreach ($config['avatars'] as $name => $target) {
 foreach ($directories as $dir) {
     create_and_set($dir);
 }
+
+//copy social media icons to public
+$sm_src = $basedir . 'storage/app/socialmedia/*';
+$sm_dst = $basedir . 'storage/app/public/socialmedia/';
+shell_exec("cp -R $sm_src $sm_dst");
 
 //Symlink from public/storage to storage/app/public
 $link_target = $basedir . 'storage/app/public';
