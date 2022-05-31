@@ -29,7 +29,7 @@ class ContactsSeeder extends Seeder
                 exit;
             }
 
-            if ($name === 'tmp') {
+            if (in_array($name, ['tmp', 'root'])) {
                 continue;
             }
             //delete all files in target directory

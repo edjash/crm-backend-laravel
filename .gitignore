@@ -7,7 +7,6 @@
 /public/build
 /storage/*.key
 /storage/app/public/*
-!/storage/app/public/socialmedia
 /vendor
 setup.lock
 .env

@@ -12,6 +12,9 @@ return [
      *  and should have a trailing and leading slash.
      **/
     'avatars' => [
+        'root' => [
+            'dir' => '/public/avatars/',
+        ],
         'tmp' => [
             'dir' => '/public/avatars/tmp/',
         ],
