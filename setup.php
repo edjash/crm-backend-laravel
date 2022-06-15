@@ -42,16 +42,17 @@ function set_perms($dir, $recursive)
 
 function create_and_set($dir)
 {
-    $name = strstr($dir, 'storage/');
+    global $mode;
+
     if (!is_dir($dir)) {
-        output("$name directory does not exist. Creating...");
-        if (@mkdir($dir)) {
-            output("Created $name directory");
+        output("$dir does not exist. Creating...");
+        if (@mkdir($dir, $mode, true)) {
+            output("Created directory $dir");
         } else {
-            output("Error: Failed to create $name directory: '$dir'", true);
+            output("Error: Failed to create directory: '$dir'", true);
         }
     }
-    output("Setting permissions for $name directory.");
+    output("Setting permissions for $dir");
     set_perms($dir, true);
 }
 
@@ -65,6 +66,8 @@ output("Setting permissions for bootstrap/cache directory.");
 set_perms($basedir . 'bootstrap/cache', true);
 
 $directories = [
+    $basedir . 'public/static/css',
+    $basedir . 'public/static/js',
     $basedir . 'storage/app/seed_avatars',
     $basedir . 'storage/app/socialmedia',
     $basedir . 'storage/app/public',
