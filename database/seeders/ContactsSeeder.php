@@ -79,6 +79,7 @@ class ContactsSeeder extends Seeder
                 ->hasAddress(1)
                 ->hasEmailAddress(1)
                 ->hasPhoneNumber(1)
+                ->hasNotes(rand(0, 10))
                 ->create([
                     'title' => $title,
                     'firstname' => $firstName,
