@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Notes;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class NotesFactory extends Factory
@@ -22,10 +23,13 @@ class NotesFactory extends Factory
     public function definition()
     {
         $text = $this->faker->realText(rand(50, 400));
+        $date = Carbon::create(2022, rand(1, 12), rand(1, 28), rand(0, 23), rand(0, 50), 0);
 
         $note = [
             'content' => $text,
             'created_by' => 1,
+            'created_at' => $date,
+            'updated_at' => $date,
         ];
 
         return $note;

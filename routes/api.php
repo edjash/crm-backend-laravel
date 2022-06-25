@@ -30,3 +30,7 @@ Route::controller(CompanyController::class)->middleware('auth:sanctum')->group(f
     Route::post('/companies', 'create');
     Route::delete('/companies/{deleteIds}', 'delete');
 });
+
+Route::controller(NotesController::class)->middleware('auth:sanctum')->group(function () {
+    Route::get('/notes/{contactType}/{contactId}', 'index');
+});
