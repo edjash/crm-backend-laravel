@@ -16,7 +16,9 @@ class NotesController extends Controller
     {
         $field = ($contactType === 'contact') ? 'contact_id' : 'company_id';
 
-        $notes = Notes::where($field, '=', $contactId)->paginate($request->limit);
+        $q = Notes::where($field, '=', $contactId);
+        $q->orderBy('updated_at', 'DESC');
+        $notes = $q->paginate($request->limit);
 
         return response()->json($notes);
     }
