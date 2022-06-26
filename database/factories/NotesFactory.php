@@ -20,10 +20,13 @@ class NotesFactory extends Factory
      *
      * @return array
      */
+
     public function definition()
     {
         $text = $this->faker->realText(rand(50, 400));
-        $date = Carbon::create(2022, rand(1, 12), rand(1, 28), rand(0, 23), rand(0, 50), 0);
+        $date = Carbon::createFromTimestamp(
+            rand(strtotime('-1 Month'), strtotime('-1 day'))
+        );
 
         $note = [
             'content' => $text,

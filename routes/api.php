@@ -1,6 +1,4 @@
 <?php
-use App\Http\Controllers\CountriesController;
-use App\Http\Controllers\IndustryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -9,7 +7,6 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
  */
-
 Route::get('/countries', [CountriesController::class, 'index'])->middleware('auth:sanctum');
 Route::get('/industries', [IndustryController::class, 'index'])->middleware('auth:sanctum');
 
@@ -32,5 +29,7 @@ Route::controller(CompanyController::class)->middleware('auth:sanctum')->group(f
 });
 
 Route::controller(NotesController::class)->middleware('auth:sanctum')->group(function () {
+    Route::post('/notes/{noteId?}', 'save');
     Route::get('/notes/{contactType}/{contactId}', 'index');
+
 });
