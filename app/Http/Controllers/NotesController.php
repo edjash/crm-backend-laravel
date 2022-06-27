@@ -28,19 +28,34 @@ class NotesController extends Controller
     {
         $validatedData = Validator::make($request->all(), [
             'content' => 'string|nullable',
+            'contactType' => 'string',
+            'contactId' => 'numeric',
         ])->validate();
+
+        $userId = $request->user()->id;
+
+        $data = [
+            'contact_id' => ($validatedData['contactType'] === 'contact') ? $validatedData['contactId'] : null,
+            'company_id' => ($validatedData['contactType'] === 'company') ? $validatedData['contactId'] : null,
+            'content' => $validatedData['content'],
+            'updated_by' => $userId,
+        ];
 
         if ($noteId) {
             $model = Notes::find($noteId);
-            $model->fill($validatedData);
+            $model->fill($data);
             $model->save();
         } else {
-            $model = Notes::create([
-                'content' => $validatedData['content'],
-            ]);
+            $data['created_by'] = $userId;
+            $model = Notes::create($data);
         }
 
         return response()->json(["note" => $model, "noteId" => $noteId]);
     }
 
+    public function delete(Request $request, $noteId)
+    {
+        Notes::destroy($noteId);
+        return response()->json('OK');
+    }
 }

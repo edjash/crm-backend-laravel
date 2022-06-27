@@ -31,5 +31,5 @@ Route::controller(CompanyController::class)->middleware('auth:sanctum')->group(f
 Route::controller(NotesController::class)->middleware('auth:sanctum')->group(function () {
     Route::post('/notes/{noteId?}', 'save');
     Route::get('/notes/{contactType}/{contactId}', 'index');
-
+    Route::delete('/notes/{noteId}', 'delete');
 });
