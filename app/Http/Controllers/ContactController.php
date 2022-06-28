@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Traits\ArrayFieldsTrait;
 use App\Http\Traits\AvatarTrait;
+use App\Http\Traits\NotesTrait;
 use App\Models\Contact;
 use App\Models\SocialMediaUrl;
 use Illuminate\Http\Request;
@@ -12,7 +13,7 @@ use Illuminate\Support\Str;
 
 class ContactController extends Controller
 {
-    use AvatarTrait, ArrayFieldsTrait;
+    use AvatarTrait, ArrayFieldsTrait, NotesTrait;
 
     public function index(Request $request)
     {
@@ -111,7 +112,7 @@ class ContactController extends Controller
             'PhoneNumber' => $validatedData['phone_number'] ?? [],
         ]);
         $this->saveSocialMedia($validatedData['socialmedia'] ?? [], $model->id);
-
+        $this->saveNote($request, 'contact', $id);
         return response()->json(["company" => $model]);
     }
 
