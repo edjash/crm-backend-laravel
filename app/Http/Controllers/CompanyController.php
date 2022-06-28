@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Traits\ArrayFieldsTrait;
 use App\Http\Traits\AvatarTrait;
+use App\Http\Traits\NotesTrait;
 use App\Models\Company;
 use App\Models\SocialMediaUrl;
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 class CompanyController extends Controller
 {
-    use AvatarTrait, ArrayFieldsTrait;
+    use AvatarTrait, ArrayFieldsTrait, NotesTrait;
 
     public function index(Request $request)
     {
@@ -109,7 +110,7 @@ class CompanyController extends Controller
             'PhoneNumber' => $validatedData['phone_number'] ?? [],
         ]);
         $this->saveSocialMedia($validatedData['socialmedia'] ?? [], $model->id);
-
+        $this->saveNote($request, 'company', $id);
         return response()->json(["company" => $model]);
     }
 
